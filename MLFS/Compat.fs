@@ -68,8 +68,12 @@ module DSet =
     
     let add (xs: 't dset) x: unit =
         ignore(xs.Add x)
-        
 
+type ('k, 'v) map when 'k : comparison = Map<'k, 'v>
+
+module Map =
+    let mem = Map.containsKey
+   
 let (^) : string -> string -> string = (+)
 // ocaml:
 // let (<|) f x = f x

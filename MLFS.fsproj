@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="MLFS/Compat.fs" />
     <Compile Include="MLFS/HM/HM.fs" />
+    <Compile Include="MLFS/Exceptions.fs" />
     <Compile Include="MLFS/HM/Unification.fs" />
     <Compile Include="MLFS/Core.fs" />
     <Compile Include="Program.fs" />

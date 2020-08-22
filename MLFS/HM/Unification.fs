@@ -2,11 +2,20 @@ module HMUnification
 
 open HM
 open CamlCompat
+open Exceptions
 
 type TCState
     = { tenv :  t darray
       ; unify : t -> t -> bool }
 
+let substitute : (t, t) map -> t -> t
+    = fun map ->
+    let rec self : t -> t = fun a ->
+        match Map.tryFind a map with
+        | Some t -> t
+        | None -> generic_transform self a
+    in self
+    
 let mk_tcstate (tenv: t darray)
     =
     let bound_links : (un, int dset) dict = dict() in
@@ -84,7 +93,49 @@ let mk_tcstate (tenv: t darray)
         | TVar v as a -> ignore(f v); a
         | a -> a
       in
+    let instantiate =
+        function
+        | TForall(ns, t) ->
+            let freshmap = Map.ofList <| List.map (fun x -> Bound x) ns
+            in substitute freshmap t
+        | a -> a
+    let rec unifyInsts : t -> t -> bool
+        = fun lhs rhs ->
+          let lhs = prune lhs in
+          let rhs = prune rhs in
+          if lhs = rhs then true
+          else
+          match lhs, rhs with
+          | TForall(_, lhs), _ ->
+            unifyInsts lhs rhs
+          | TVar i, b
+          | b, TVar i -> 
+            if occur_in i b then
+                raise <| RecursiveType "a ~ a -> b"
+            else
+                ignore(link i b)
+                true
+          | _, TForall(_, _) ->
+            unifyInsts lhs <| instantiate rhs
+          
+          | TImplicit lhs, rhs
+          | lhs, TImplicit rhs ->
+            unifyInsts lhs rhs
+          | TArrow(a1, r1), TArrow(a2, r2) ->
+            unifyInsts a2 a1 &&
+            unifyInsts r1 r2
+          | TApp(f1, a1), TApp(f2, a2) ->
+            unifyInsts f1 f2 &&
+            unifyInsts a1 a2
+          | TTup xs1, TTup xs2 ->
+            List.forall2 unifyInsts xs1 xs2
+          | _ -> false
+      in
     None
+    // let unify : t -> t -> bool
+
+
+
         
         
 
