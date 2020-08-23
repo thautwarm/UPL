@@ -19,6 +19,12 @@ let int_ts =
     i, HM.TNom <| sprintf "i%d" i
   ]
 
+let uint_ts =
+  Map.ofList [
+    for i in [8; 16; 32; 64] ->
+    i, HM.TNom <| sprintf "u%d" i
+  ]
+
 let float_ts =
   Map.ofList [
     for i in [32; 64] ->

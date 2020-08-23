@@ -26,7 +26,7 @@ let rec inst_resolve : global_st -> inst_resolv_ctx -> HM.t -> pos -> IR.expr
                 then DArray.push candidates (inst, evidences)
             done
         in
-        if DArray.is_empty candidates
+        if DArray.isEmpty candidates
         then None
         else
         if DArray.len candidates = 1

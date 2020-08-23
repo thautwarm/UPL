@@ -30,7 +30,7 @@ module DArray =
     let len (this: 'a darray) =
         this.Count
 
-    let is_empty (this: 'a darray) = this.Count = 0
+    let isEmpty (this: 'a darray) = this.Count = 0
 
 
 type ('k, 'v) dict = System.Collections.Generic.Dictionary<'k, 'v>

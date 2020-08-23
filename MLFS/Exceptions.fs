@@ -5,6 +5,7 @@ type Signal =
 | DuplicateInstanceError of Core.evidence_instance array
 | InstanceNotFound of HM.t
 | UnboundTypeVariable of symbol
+| UnboundVariable of symbol
 | UnificationFail of HM.t * HM.t
 | UnboundVar of symbol
 | UnusedAnnotation of symbol * Surf.ty_expr

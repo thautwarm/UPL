@@ -207,7 +207,11 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
                 fun (ti, local_implicits) ->
                 let leaf_type = prune leaf_type
                 let leaf_type, implicits = apply_prop ti leaf_type
-                IR.apply_implicits impl implicits leaf_type pos local_implicits
+                match prune leaf_type with
+                | T t ->
+                    IR.expr pos (Some leaf_type) (IR.ETypeVal t)
+                | leaf_type ->
+                    IR.apply_implicits impl implicits leaf_type pos local_implicits
             }
     function
     | Surf.EExt external ->
@@ -310,4 +314,50 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
              let ir_let = IR.ELet(inferred_decls, ir_body)
              IR.expr pos ir_body.typ ir_let
         }
-    | _ -> failwith "TODO"
+    | Surf.EITE(cond, arm1, arm2) ->
+        let topdown_check_cond =
+                infer_expr st_global st_local cond
+        let topdown_check_arm1 =
+                infer_expr st_global st_local arm1
+        let topdown_check_arm2 =
+                infer_expr st_global st_local arm2
+        { run = fun (ti: type_info, local_implicits) ->
+            let t, implicits = apply_prop ti <| new_tvar()
+            let ti = InstantiateTo t
+            let ir_arm1 = topdown_check_arm1.run(ti, local_implicits)
+            let ir_arm2 = topdown_check_arm2.run(ti, local_implicits)
+            // because topdown propagation will give more information
+            // after checking the return, so we propagate return types firstly.
+            let ir_cond =
+                 topdown_check_cond.run
+                    ( InstantiateTo bool_t
+                    , local_implicits
+                    )
+            let ir_ite = IR.EITE(ir_cond, ir_arm1, ir_arm2)
+            IR.apply_implicits ir_ite implicits t pos local_implicits
+        }
+    | Surf.EVal value ->
+        let t =
+            match value with
+            | I8 _ -> int_ts.[8]
+            | I16 _ -> int_ts.[16]
+            | I32 _ -> int_ts.[32]
+            | I64 _ -> int_ts.[64]
+            | U8 _ -> uint_ts.[8]
+            | U16 _ -> uint_ts.[16]
+            | U32 _ -> uint_ts.[32]
+            | U64 _ -> uint_ts.[64]
+            | F32 _ -> float_ts.[32]
+            | F64 _ -> float_ts.[64]
+            | Ch _ -> char_t
+            | Bl _ -> bool_t
+            | Str _ -> str_t
+        let ir_val = IR.EVal value
+        propagate_for_leaf t ir_val
+    | Surf.EVar user_sym ->
+        match Map.tryFind user_sym st_local.type_env with
+        | None -> raise <| InferError(pos, UnboundVar user_sym)
+        | Some var_t ->
+        let var_t = prune var_t
+        propagate_for_leaf var_t (IR.EVar user_sym)
+    | _ -> failwith ""
