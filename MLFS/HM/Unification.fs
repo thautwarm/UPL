@@ -33,6 +33,7 @@ type tcstate =
   ; tenv : t darray
   ; prune : t -> t
   ; new_tvar : unit -> t
+  ; prune_with_var_check : (int -> unit) -> t -> t
   }
 
 let mk_tcstate (tenv: t darray)
@@ -250,6 +251,7 @@ let mk_tcstate (tenv: t darray)
     ; unifyImplicits = unifyImplicits
     ; new_tvar = new_tvar
     ; prune = prune
+    ; prune_with_var_check = prune_with_var_check
     }
 
 let less_than_under_evidences : t -> t -> bool * t darray =

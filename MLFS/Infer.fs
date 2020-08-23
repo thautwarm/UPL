@@ -118,13 +118,13 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
                             darray()
                     let _ =
                         DArray.push global_implicits <|
-                        IR.evidence_instance im local_st.pos (IR.EVar symgen) false
+                        IR.evidence im local_st.pos (IR.EVar symgen) false
                     let _ =
                         global_st.global_implicits_deltas.[class_head] <-
                         1 + Dict.getForce global_st.global_implicits_deltas class_head (fun _ -> 0)
                     []
                 | TImplicit im ->
-                   let inst = IR.evidence_instance im local_st.pos (IR.EVar symgen) false in
+                   let inst = IR.evidence im local_st.pos (IR.EVar symgen) false in
                    let _ = local_st <- {local_st with local_implicits = inst::local_st.local_implicits }
                    []
                 | _ -> []
@@ -290,7 +290,7 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
             let local_implicits =
                 match prune arg_t with
                 | TImplicit instance ->
-                    IR.evidence_instance instance pos (IR.EVar symgen) false::local_implicits
+                    IR.evidence instance pos (IR.EVar symgen) false::local_implicits
                 | _ -> local_implicits
             let ir_body =
                 topdown_check.run

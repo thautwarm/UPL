@@ -7,6 +7,7 @@ type Signal =
 | UnboundTypeVariable of symbol
 | UnboundVariable of symbol
 | UnificationFail of HM.t * HM.t
+| UnsolvedTypeVariables of HM.t
 | UnboundVar of symbol
 | UnusedAnnotation of symbol * Surf.ty_expr
 | MalformedTypeClassKind of HM.t

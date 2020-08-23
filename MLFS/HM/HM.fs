@@ -57,6 +57,10 @@ type t =
   (* implicit type is from type class *)
   | TImplicit of t
 
+let top_t =
+  let un = un "a" in
+  TForall([un], TBound un)
+
 let generic_transform : (t -> t) -> (t -> t)
     = fun self root ->
     (* for ocaml compatibility, we don't use

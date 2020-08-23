@@ -1,6 +1,9 @@
 // compat ocaml and F#
 module CamlCompat
 
+let readFile = System.IO.File.ReadAllText
+let writeFile f contents = System.IO.File.WriteAllText(f, contents)
+
 let time_ns ()
     = System.DateTime.UtcNow.Ticks
 
@@ -21,6 +24,9 @@ module DArray =
     let push (this: 'a darray) a =
         this.Add a
 
+    let extend (this: 'a darray) a =
+        this.AddRange a
+
     let ith (this: 'a darray) i =
         this.[i]
 
@@ -34,6 +40,9 @@ module DArray =
 
 
 type ('k, 'v) dict = System.Collections.Generic.Dictionary<'k, 'v>
+
+let (|KV|) (x : System.Collections.Generic.KeyValuePair<'k, 'v>) =
+    KV(x.Key, x.Value)
 
 let constant x = fun _ -> x
 module Dict =
@@ -67,6 +76,9 @@ module Dict =
     let isEmpty : ('k, _) dict -> bool = fun this ->
         this.Count = 0
 
+    let size : (_, _) dict -> int =
+        fun this -> this.Count
+
 
 module List =
     let foreach xs f = List.iter f xs
@@ -89,6 +101,21 @@ module DSet =
 
     let add (xs: 't dset) x: unit =
         ignore(xs.Add x)
+
+    let isEmpty (xs : 't dset) =
+        xs.Count = 0
+
+    let toList (xs: 't dset) =
+        List.ofSeq xs
+
+    let intersect (xs: 't dset) ys =
+        let r = dset(xs)
+        r.IntersectWith ys;
+        r
+
+    let update (xs: 't dset) ys =
+        xs.UnionWith ys
+
 
 type ('k, 'v) map when 'k : comparison = Map<'k, 'v>
 

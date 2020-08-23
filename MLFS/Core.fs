@@ -3,8 +3,8 @@ module Core
 open Common
 open CamlCompat
 
-type evidence_instance = IR.evidence_instance
-type inst_resolv_ctx = IR.inst_resolv_ctx
+type evidence_instance = IR.evidence
+type inst_resolv_ctx = IR.evidence_resolv_ctx
 
 let arrow_class = HM.TNom "arrow_class"
 let general_class = HM.TNom "general_class"
@@ -34,6 +34,7 @@ let float_ts =
 let str_t = HM.TNom "str"
 let char_t = HM.TNom "char"
 let bool_t = HM.TNom "bool"
+
 
 let T x = HM.TApp(type_type, x)
 let (|T|_|) x =
@@ -109,3 +110,23 @@ let gensym (g: global_st) (major : string) =
   done;
   // System.String.Concat : char iterable -> string
   sprintf "|%s|%s|%s|" major g.current_module_name (System.String.Concat chars)
+
+
+let (|MustBeNom|) t =
+  match t with
+  | HM.TNom s -> s
+  | _ -> failwith "impossible"
+
+let predef =
+  Map.ofList
+  <| [ for KV(_,  MustBeNom n & t) in float_ts -> n, t ]
+   @ [ for KV(_,  MustBeNom n & t) in int_ts -> n, t ]
+   @ [ for MustBeNom n & t in
+     [ namespace_class
+     ; field_class
+     ; module_class
+     ; type_type
+     ; char_t
+     ; str_t
+     ; bool_t
+     ] -> n, t]

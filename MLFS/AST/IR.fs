@@ -9,7 +9,7 @@ open CamlCompat
 // 3. isPruned:is the type pruned
 // variable naming convention:
 // evi, inst, ei, *_ei, *_evi, *_inst
-type evidence_instance
+type evidence
     = { mutable t   : HM.t
       ; pos : pos
       ; impl : expr_impl
@@ -22,7 +22,7 @@ type evidence_instance
 // else, whose type is
 //    '(classKind, evidence_instance array) map'
 // , for the performance concern
-and inst_resolv_ctx = evidence_instance list
+and evidence_resolv_ctx = evidence list
 
 
 and expr =
@@ -46,12 +46,12 @@ and expr_impl =
 | EFun of symbol * HM.t * expr
 | EApp of expr * expr
 | ETup of expr list
-| EIm of expr * HM.t * inst_resolv_ctx
+| EIm of expr * HM.t * evidence_resolv_ctx
 
 
 let expr pos typ impl = {pos=pos; typ=typ; impl=impl}
 
-let apply_implicits : expr_impl -> HM.t darray -> HM.t -> pos -> inst_resolv_ctx -> expr =
+let apply_implicits : expr_impl -> HM.t darray -> HM.t -> pos -> evidence_resolv_ctx -> expr =
     fun e implicits final_type pos local_implicits ->
     let e = ref e in
     for im in implicits do
@@ -102,5 +102,10 @@ let gen_trans_expr : 'ctx transformer -> 'ctx -> expr  -> expr
     fun ({impl = impl} as expr) ->
     { expr with impl = expr_impl_ self ctx impl }
 
-let evidence_instance t pos impl isPruned =
+let evidence t pos impl isPruned =
     {t = t; pos = pos; impl = impl; isPruned = isPruned}
+
+type library_signature =
+    { module_names : symbol list
+    ; implicits : (HM.t * evidence array) array
+    }
