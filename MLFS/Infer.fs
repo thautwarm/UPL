@@ -74,7 +74,7 @@ let rec infer_t : global_st -> local_st -> Surf.ty_expr -> t =
 // infer from Surf.decl
 let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl Lazy list * local_st =
     fun global_st local_st decls is_global ->
-    let {prune=prune; new_tvar}  = global_st.tcstate in
+    let {prune=prune; new_tvar=new_tvar}  = global_st.tcstate in
     let annotated = dict() in
     // a series of functions to postpone the top-down check&unification
     let rec recurse (rev_decls: IR.decl Lazy list, local_st: local_st) =
