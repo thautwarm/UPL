@@ -15,6 +15,7 @@ type ('a, 'b) Either =
     | Either of 'a
     | Otherwise of 'b
 
+
 type 'a darray = 'a System.Collections.Generic.List
 module DArray =
     let push (this: 'a darray) a =
@@ -32,6 +33,7 @@ module DArray =
 
 type ('k, 'v) dict = System.Collections.Generic.Dictionary<'k, 'v>
 
+let constant x = fun _ -> x
 module Dict =
     let pop (this: ('k, 'v) dict) (k: 'k) =
         if this.ContainsKey k then
@@ -39,7 +41,11 @@ module Dict =
             Some <| this.[k]
         else
             None
-    let get_force (this: ('k, 'v) dict) k default' =
+    let ofList (xs: ('k * 'v) list) =
+        let mkkv (a, b) = System.Collections.Generic.KeyValuePair(a, b) in
+        dict([|for kv in xs -> mkkv kv|])
+
+    let getForce (this: ('k, 'v) dict) k default' =
         if this.ContainsKey k then
             this.[k]
         else
@@ -60,7 +66,7 @@ module DSet =
         for x in xs do
             f x
         done
-    let from_list (xs: 't list) =
+    let ofList (xs: 't list) =
         dset(xs)
 
     let contains (xs: 't dset) x =
