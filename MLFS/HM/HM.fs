@@ -22,6 +22,17 @@ type un
         name : string
       }
 
+let current_runtime_id_count = ref 0
+let current_runtime_time_ns = time_ns()
+
+let un (name: string) =
+  { time_ns = current_runtime_time_ns
+  ; name = name
+  ; runtime_id = 
+      let i = !current_runtime_id_count in
+      let _ = incr current_runtime_id_count in i
+  }
+
 let show_un { time_ns = time_ns
             ; runtime_id = runtime_id
             ; name = name

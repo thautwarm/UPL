@@ -2,29 +2,18 @@ module Core
 
 open Common
 open CamlCompat
-// for type class resolution
-// this record holds a variable(field 'exp') with the info of
-// 1. pos: where it's defined(source code position)
-// 2. t: what the type
-// 3. isPruned:is the type pruned
-// variable naming convention:
-// evi, inst, ei, *_ei, *_evi, *_inst
-type evidence_instance
-    = { t   : HM.t;
-        pos : pos;
-        isPruned : bool
-      }
 
-// instance resolution context.
-// it's local context.
-// global evidence instances are stored somewhere
-// else, whose type is 
-//    '(classKind, evidence_instance array) map'
-// , for the performance concern
-type inst_resolv_ctx = evidence_instance list
+type evidence_instance = IR.evidence_instance
+type inst_resolv_ctx = IR.inst_resolv_ctx
 
 let arrow_class = HM.TNom "arrow_class"
 let general_class = HM.TNom "general_class"
+let type_type = HM.TNom "type"
+let T x = HM.TApp(type_type, x)
+let (|T|_|) x =
+  match x with
+  | HM.TApp(HM.TNom "type", x) -> Some x
+  | _ -> None
 
 // to speed up instance resolution
 let rec get_type_head =
@@ -39,7 +28,7 @@ let rec get_type_head =
 
 // type check global state
 type global_st =
-  { tctsate : HMUnification.tcstate
+  { tcstate : HMUnification.tcstate
   // for global resolution
   ; global_implicits : (HM.t, evidence_instance darray) dict
   // for type holes and hints
@@ -50,8 +39,8 @@ type global_st =
   ; mutable current_module_name : string
   }
 
-let empty_global_st () = 
-  { tctsate = HMUnification.mk_tcstate <| darray()
+let empty_global_st () =
+  { tcstate = HMUnification.mk_tcstate <| darray()
   ; global_implicits = dict()
   ; queries = darray()
   ; count = ref 0

@@ -30,6 +30,8 @@ module DArray =
     let len (this: 'a darray) =
         this.Count
 
+    let is_empty (this: 'a darray) = this.Count = 0
+
 
 type ('k, 'v) dict = System.Collections.Generic.Dictionary<'k, 'v>
 
@@ -52,17 +54,20 @@ module Dict =
             let d = default' k
             this.[k] <- d
             d
+    let contains : ('k, 'v) dict -> 'k -> bool =
+        fun this k -> this.ContainsKey k
+
 
 module List =
     let foreach xs f = List.iter f xs
-        
+
 type 't dset = System.Collections.Generic.HashSet<'t>
 
 module DSet =
     let clear (this: 't dset) =
         this.Clear()
-    
-    let foreach (xs: 't dset) f = 
+
+    let foreach (xs: 't dset) f =
         for x in xs do
             f x
         done
@@ -71,7 +76,7 @@ module DSet =
 
     let contains (xs: 't dset) x =
         xs.Contains x
-    
+
     let add (xs: 't dset) x: unit =
         ignore(xs.Add x)
 
@@ -79,7 +84,9 @@ type ('k, 'v) map when 'k : comparison = Map<'k, 'v>
 
 module Map =
     let mem = Map.containsKey
-   
+    let let_seq m1 m2 =
+        Map.foldBack Map.add (Map.ofSeq m2) m1
+
 let (^) : string -> string -> string = (+)
 // ocaml:
 // let (<|) f x = f x

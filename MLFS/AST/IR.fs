@@ -2,7 +2,30 @@ module IR
 open Common
 open CamlCompat
 
-type expr =
+// for type class resolution
+// this record holds a variable(field 'exp') with the info of
+// 1. pos: where it's defined(source code position)
+// 2. t: what the type
+// 3. isPruned:is the type pruned
+// variable naming convention:
+// evi, inst, ei, *_ei, *_evi, *_inst
+type evidence_instance
+    = { mutable t   : HM.t;
+        pos : pos;
+        isPruned : bool;
+        impl : expr_impl
+      }
+
+// instance resolution context.
+// it's local context.
+// global evidence instances are stored somewhere
+// else, whose type is
+//    '(classKind, evidence_instance array) map'
+// , for the performance concern
+and inst_resolv_ctx = evidence_instance list
+
+
+and expr =
     { pos : pos
     ; typ : HM.t option
     ; impl : expr_impl
@@ -23,12 +46,12 @@ and expr_impl =
 | EFun of symbol * HM.t * expr
 | EApp of expr * expr
 | ETup of expr list
-| EIm of expr * HM.t * Core.inst_resolv_ctx
+| EIm of expr * HM.t * inst_resolv_ctx
 
 
 let new_expr pos typ impl = {pos=pos; typ=typ; impl=impl}
 
-let apply_implicits : expr_impl -> HM.t darray -> HM.t -> pos -> Core.inst_resolv_ctx -> expr =
+let apply_implicits : expr_impl -> HM.t darray -> HM.t -> pos -> inst_resolv_ctx -> expr =
     fun e implicits final_type pos local_implicits ->
     let e = ref e in
     for im in implicits do
@@ -37,7 +60,7 @@ let apply_implicits : expr_impl -> HM.t darray -> HM.t -> pos -> Core.inst_resol
     done;
     {pos = pos; typ = Some final_type; impl= !e}
 
-let apply_explicits : expr_impl -> expr list -> HM.t -> pos -> expr =
+let apply_explicits : expr_impl -> expr array -> HM.t -> pos -> expr =
     fun e_impl explicits final_type pos ->
     let e_impl = ref e_impl in
     for explicit in explicits do

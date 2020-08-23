@@ -11,10 +11,12 @@
     <Compile Include="MLFS/Common.fs" />
     <Compile Include="MLFS/AST/Surf.fs" />
     <Compile Include="MLFS/HM/HM.fs" />
-    <Compile Include="MLFS/Exceptions.fs" />
     <Compile Include="MLFS/HM/Unification.fs" />
-    <Compile Include="MLFS/Core.fs" />
     <Compile Include="MLFS/AST/IR.fs" />
+    <Compile Include="MLFS/Core.fs" />
+    <Compile Include="MLFS/Exceptions.fs" />
+    <Compile Include="MLFS/TypeClass.fs" />
+    <Compile Include="MLFS/Infer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

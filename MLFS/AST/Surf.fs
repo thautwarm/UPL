@@ -8,6 +8,7 @@ type ty_expr =
 | TArrow of ty_expr * ty_expr
 | TTup of ty_expr list
 | TVar of symbol
+| TSym of symbol
 | TImplicit of ty_expr
 | TNew of symbol
 | TQuery of string * ty_expr

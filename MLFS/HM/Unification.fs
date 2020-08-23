@@ -2,7 +2,8 @@ module HMUnification
 
 open HM
 open CamlCompat
-open Exceptions
+
+exception RecursiveType of string
 
 let substitute : (t, t) map -> t -> t
     = fun map ->
@@ -250,3 +251,17 @@ let mk_tcstate (tenv: t darray)
     ; new_tvar = new_tvar
     ; prune = prune
     }
+
+let less_than_under_evidences : t -> t -> bool * t darray =
+  fun lhs rhs ->
+  let evidences = darray()
+  let small_tc = mk_tcstate(darray())
+  let subst_table = dict()
+  let rec subst =
+    function
+    | TVar i when Dict.contains subst_table i ->
+      subst_table.[i]
+    | root -> generic_transform subst root 
+  in
+  small_tc.unifyImplicits evidences (subst lhs) (subst rhs), evidences
+  
