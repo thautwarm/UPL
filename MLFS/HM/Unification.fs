@@ -11,7 +11,7 @@ let substitute : (t, t) map -> t -> t
         | Some t -> t
         | None -> generic_transform self a
     in self
-    
+
 let fresh :  (un, t) map -> t -> t =
   fun map ->
     let rec self : t -> t =
@@ -33,7 +33,7 @@ type tcstate =
   ; prune : t -> t
   ; new_tvar : unit -> t
   }
-  
+
 let mk_tcstate (tenv: t darray)
     =
     let bound_links : (un, int dset) dict = dict() in
@@ -43,8 +43,8 @@ let mk_tcstate (tenv: t darray)
         | None -> ()
         | Some rels ->
         let _ = DSet.foreach rels <| fun rel ->
-            DArray.set tenv rel <| TVar rel
-            f(rel)
+            let _ = DArray.set tenv rel <| TVar rel
+            in f rel
         in
         DSet.clear rels
       in
@@ -58,7 +58,7 @@ let mk_tcstate (tenv: t darray)
         fun i ty ->
         match ty with
         | TVar i' when i' = i -> false
-        | _ -> 
+        | _ ->
             let rec check = function
                 | TVar i' when i' = i -> false
                 | x -> generic_check check x
@@ -66,7 +66,7 @@ let mk_tcstate (tenv: t darray)
       in
     let link : int -> t -> t =
         fun typeref t ->
-        
+
         match
             match t with
             | TBound un ->  Some un
@@ -95,7 +95,7 @@ let mk_tcstate (tenv: t darray)
             end
         | a -> generic_transform prune a
       in
-    
+
     // check if any unsolved type variables
     let prune_with_var_check : (int -> 'a) -> t -> t =
         fun f a ->
@@ -119,37 +119,36 @@ let mk_tcstate (tenv: t darray)
                 List.map (fun x -> TBound x, new_tvar()) ns
             in substitute freshmap t
         | a -> a
+      in
     let rec unifyInsts : t -> t -> bool
-        = fun lhs rhs ->
-          let lhs = prune lhs in
-          let rhs = prune rhs in
-          if lhs = rhs then true
-          else
-          match lhs, rhs with
-          | TForall(_, lhs), _ ->
-            unifyInsts lhs rhs
-          | TVar i, b
-          | b, TVar i -> 
-            if occur_in i b then
-                raise <| RecursiveType "a ~ a -> b"
-            else
-                ignore(link i b)
-                true
-          | _, TForall(_, _) ->
-            unifyInsts lhs <| instantiate rhs
-          
-          | TImplicit lhs, rhs
-          | lhs, TImplicit rhs ->
-            unifyInsts lhs rhs
-          | TArrow(a1, r1), TArrow(a2, r2) ->
-            unifyInsts a2 a1 &&
-            unifyInsts r1 r2
-          | TApp(f1, a1), TApp(f2, a2) ->
-            unifyInsts f1 f2 &&
-            unifyInsts a1 a2
-          | TTup xs1, TTup xs2 ->
-            List.forall2 unifyInsts xs1 xs2
-          | _ -> false
+      = fun lhs rhs ->
+        let lhs = prune lhs in
+        let rhs = prune rhs in
+        if lhs = rhs then true
+        else
+        match lhs, rhs with
+        | TForall(_, lhs), _ ->
+          unifyInsts lhs rhs
+        | TVar i, b
+        | b, TVar i ->
+          if occur_in i b then
+              raise <| RecursiveType "a ~ a -> b"
+          else let _ = link i b in true
+        | _, TForall(_, _) ->
+          unifyInsts lhs <| instantiate rhs
+
+        | TImplicit lhs, rhs
+        | lhs, TImplicit rhs ->
+          unifyInsts lhs rhs
+        | TArrow(a1, r1), TArrow(a2, r2) ->
+          unifyInsts a2 a1 &&
+          unifyInsts r1 r2
+        | TApp(f1, a1), TApp(f2, a2) ->
+          unifyInsts f1 f2 &&
+          unifyInsts a1 a2
+        | TTup xs1, TTup xs2 ->
+          List.forall2 unifyInsts xs1 xs2
+        | _ -> false
       in
     let rec unify : t -> t -> bool =
       fun lhs rhs ->
@@ -174,10 +173,11 @@ let mk_tcstate (tenv: t darray)
         (* forall a. a -> 'v ~ forall b. b -> b
            we firstly solve: 'tvar -> 'v ~ b -> b
            then: 'tvar ~ b ~'v
-           then:  as we know 'tvar is from a, 
+           then:  as we know 'tvar is from a,
            hence: **b** is mapped to **a** in lhs type,
            we get: lhs = forall a. a -> a
          *)
+        in
         let rec getLHSBounds rhsBoundsToLHS =
           function
           | [] -> Some rhsBoundsToLHS
@@ -190,7 +190,7 @@ let mk_tcstate (tenv: t darray)
             let rhsBoundsToLHS =
               Map.add v (TBound k) rhsBoundsToLHS
             in getLHSBounds rhsBoundsToLHS tail
-        in 
+        in
         (match getLHSBounds Map.empty
                <| Map.toList subst1
           with
@@ -201,8 +201,9 @@ let mk_tcstate (tenv: t darray)
         let _ = List.foreach ns2 <| fun un ->
             unlink un <| fun i ->
               begin
-                backmap1 := (TVar i, TBound un) :: !backmap1
-                backmap2 := (TVar i, Map.find (TBound un) lhsBounds) :: !backmap1
+                backmap1 := (TVar i, TBound un) :: !backmap1;
+                backmap2 := (TVar i, Map.find (TBound un) lhsBounds) :: !backmap2;
+                ()
               end
           in
         let backmap1, backmap2 =
@@ -212,13 +213,11 @@ let mk_tcstate (tenv: t darray)
         unify (substitute backmap2 p2) p2 &&
         unify (substitute backmap1 p1) p1)
       | TVar i, b
-      | b, TVar i -> 
+      | b, TVar i ->
         if occur_in i b then
             raise <| RecursiveType "a ~ a -> b"
-        else
-            ignore(link i b)
-            true
-      | TArrow(a1, r1), TArrow(a2, r2) 
+        else ignore(link i b); true
+      | TArrow(a1, r1), TArrow(a2, r2)
       | TApp(a1, r1), TApp(a2, r2) ->
         unify a1 a2 && unify r1 r2
       | TTup xs1, TTup xs2 ->
@@ -243,7 +242,7 @@ let mk_tcstate (tenv: t darray)
         let _ = DArray.push implicits im in
         unifyImplicits implicits lhs rhs
       | _ -> unifyInsts lhs rhs
-    in 
+    in
     { tenv = tenv
     ; unify = unify
     ; unifyInsts = unifyInsts
@@ -255,11 +254,10 @@ let mk_tcstate (tenv: t darray)
 
 
 
-        
-        
 
-    
-        
-        
 
- 
+
+
+
+
+
