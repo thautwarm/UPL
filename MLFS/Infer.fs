@@ -138,25 +138,24 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
             let rev_decls = lazy_decl::rev_decls
             recurse (rev_decls, local_st) tl
         | Surf.DBind(user_sym, expr) ->
-            let symgen, ann_ty, scoped_type_variables =
+            let symgen, ann_ty, scoped_type_variables, local_st =
                 match Dict.tryFind annotated user_sym with
                 | Some scoped_type_variables ->
                     local_st.symmap.[user_sym]
                     , prune (local_st.type_env.[user_sym])
                     , scoped_type_variables
+                    , local_st
                 | _ ->
                     let symgen = gensym global_st user_sym
                     let tvar = new_tvar()
                     let local_st =
                         { local_st
-                          with type_env =
-                                Map.add user_sym symgen
-                                local_st.type_env
-                               symmap =
-                                Map.add user_sym tvar
-                                local_st.symmap
+                          with symmap =
+                                Map.add user_sym symgen local_st.symmap
+                               type_env =
+                                Map.add user_sym tvar local_st.type_env
                         }
-                    symgen, tvar, []
+                    symgen, tvar, [], local_st
             let local_st =
                 if List.isEmpty scoped_type_variables then
                     local_st
