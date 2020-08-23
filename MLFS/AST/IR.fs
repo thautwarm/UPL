@@ -49,7 +49,7 @@ and expr_impl =
 | EIm of expr * HM.t * inst_resolv_ctx
 
 
-let new_expr pos typ impl = {pos=pos; typ=typ; impl=impl}
+let expr pos typ impl = {pos=pos; typ=typ; impl=impl}
 
 let apply_implicits : expr_impl -> HM.t darray -> HM.t -> pos -> inst_resolv_ctx -> expr =
     fun e implicits final_type pos local_implicits ->
@@ -64,9 +64,9 @@ let apply_explicits : expr_impl -> expr array -> HM.t -> pos -> expr =
     fun e_impl explicits final_type pos ->
     let e_impl = ref e_impl in
     for explicit in explicits do
-        e_impl := EApp(new_expr pos None !e_impl, explicit);
+        e_impl := EApp(expr pos None !e_impl, explicit);
     done;
-    new_expr pos (Some final_type) !e_impl
+    expr pos (Some final_type) !e_impl
 
 type ('ctx, 'a) trans = 'ctx -> 'a -> 'a
 type 'ctx transformer =

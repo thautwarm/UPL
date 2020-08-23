@@ -8,11 +8,31 @@ type inst_resolv_ctx = IR.inst_resolv_ctx
 
 let arrow_class = HM.TNom "arrow_class"
 let general_class = HM.TNom "general_class"
-let type_type = HM.TNom "type"
+let namespace_class = HM.TNom "namespace"
+let field_class = HM.TNom "field"
+let module_class = HM.TNom "Module"
+let type_type = HM.TNom "Type"
+
+let int_ts =
+  Map.ofList [
+    for i in [8; 16; 32; 64] ->
+    i, HM.TNom <| sprintf "i%d" i
+  ]
+
+let float_ts =
+  Map.ofList [
+    for i in [32; 64] ->
+    i, HM.TNom <| sprintf "f%d" i
+  ]
+
+let str_t = HM.TNom "str"
+let char_t = HM.TNom "char"
+let bool_t = HM.TNom "bool"
+
 let T x = HM.TApp(type_type, x)
 let (|T|_|) x =
   match x with
-  | HM.TApp(HM.TNom "type", x) -> Some x
+  | HM.TApp(HM.TNom "Type", x) -> Some x
   | _ -> None
 
 // to speed up instance resolution

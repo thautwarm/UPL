@@ -10,7 +10,7 @@ type type_info =
 | NoPropagation
 | InstantiateTo of t
 
-type TopdownCheck = { run : (type_info * inst_resolv_ctx) -> IR.expr }
+type topdown_check = { run : (type_info * inst_resolv_ctx) -> IR.expr }
 // infer type
 let rec infer_t : global_st -> local_st -> Surf.ty_expr -> t =
     fun global_st local_st ty_expr ->
@@ -64,7 +64,7 @@ let rec infer_t : global_st -> local_st -> Surf.ty_expr -> t =
     | typetype ->
         let tvar = new_tvar() in
         let typetype' = T tvar in
-        if unify (typetype') typetype
+        if not <| unify (typetype') typetype
         then
             raise <|
             InferError(pos, UnificationFail(prune typetype', prune typetype))
@@ -173,9 +173,141 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
             let rev_decls = lazy_decl :: rev_decls
             recurse (rev_decls, local_st) tl
 
-        | Surf.DOpen _ -> failwith "TODO"
+        | Surf.DOpen expr ->
+            let topdown_check = infer_expr global_st local_st expr
+            let ex = topdown_check.run (NoPropagation, local_st.local_implicits)
+            failwith "TODO"
+
 
     in recurse ([], local_st) decls
 
-and infer_expr : global_st -> local_st -> Surf.expr -> TopdownCheck =
-    failwith ""
+and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
+    fun st_global st_local ->
+    let { prune = prune
+        ; unifyImplicits = unifyImplicits
+        ; unify = unify
+        ; unifyInsts = unifyInsts
+        ; new_tvar = new_tvar
+        } = st_global.tcstate
+    let local_implicits = st_local.local_implicits
+    let pos = st_local.pos
+    let apply_prop : type_info -> t -> t * t darray
+        = fun ti me ->
+        let implicits = darray()
+        match ti with
+        | NoPropagation -> me, implicits
+        | InstantiateTo instiated_type ->
+            if not <| unifyImplicits implicits instiated_type me then
+                raise <| InferError(pos, UnificationFail(prune instiated_type, prune me))
+            else instiated_type, implicits
+
+    let propagate_for_leaf : t -> IR.expr_impl -> topdown_check =
+        fun leaf_type impl ->
+            { run =
+                fun (ti, local_implicits) ->
+                let leaf_type = prune leaf_type
+                let leaf_type, implicits = apply_prop ti leaf_type
+                IR.apply_implicits impl implicits leaf_type pos local_implicits
+            }
+    function
+    | Surf.EExt external ->
+        { run = fun (ti: type_info, local_implicits) ->
+            let t = new_tvar()
+            let t, implicits = apply_prop ti t
+            IR.apply_implicits (IR.EExt external) implicits t pos local_implicits
+        }
+    | Surf.EQuery(label, e) ->
+        let topdown_check = infer_expr st_global st_local e
+        let queries = st_global.queries
+        { run = fun (ti: type_info, local_implicits) ->
+            let e = topdown_check.run (ti, local_implicits)
+            (match e.typ with
+            | Some t -> DArray.push queries (label, t)
+            // should prove this won't happen
+            // typ = None happens only when applying implicit arguments
+            | None -> failwith "compiler internal error");
+            e
+        }
+    | Surf.ELoc(pos, expr) ->
+        infer_expr st_global ({st_local with pos = pos}) expr
+    | Surf.ETup xs ->
+        let topdown_checks = List.map (infer_expr st_global st_local) xs
+        let n_xs = List.length xs
+        { run = fun (ti: type_info, local_implicits) ->
+            let ts = [for _ = 1 to n_xs do new_tvar()]
+            let tup_t = TTup ts
+            let tup_t, implicits = apply_prop ti tup_t
+            let elts =
+                [ for (topdown_check, t) in List.zip topdown_checks ts ->
+                  topdown_check.run(InstantiateTo t, local_implicits)
+                ]
+            IR.apply_implicits (IR.ETup elts) implicits tup_t pos local_implicits
+        }
+    | Surf.EApp(f, arg) ->
+        let topdown_check_f = infer_expr st_global st_local f
+        let topdown_check_arg = infer_expr st_global st_local arg
+        { run = fun (ti:type_info, local_implicits) ->
+            let arg_t = new_tvar()
+            let ret_t = new_tvar()
+            let ret_t, implicits = apply_prop ti ret_t
+            let ir_f =
+                topdown_check_f.run
+                    ( InstantiateTo <| TArrow(arg_t, ret_t)
+                    , local_implicits
+                    )
+            let ir_arg =
+                topdown_check_arg.run
+                    ( InstantiateTo <| arg_t
+                    , local_implicits
+                    )
+            IR.apply_implicits
+                (IR.EApp(ir_f, ir_arg))
+                implicits
+                ret_t
+                pos
+                local_implicits
+        }
+    | Surf.EFun(user_sym, expr) ->
+        let symgen = gensym st_global user_sym
+        let arg_t = new_tvar()
+        let ret_t = new_tvar()
+        let st_local =
+            let {symmap=old_symmap; type_env=old_type_env} = st_local in
+            { st_local
+               with
+                symmap = Map.add user_sym symgen old_symmap
+                type_env = Map.add user_sym arg_t old_type_env
+            }
+        let topdown_check = infer_expr st_global st_local expr
+        { run = fun (ti:type_info, local_implicits) ->
+            let arrow_t, implicits = apply_prop ti <| TArrow(arg_t, ret_t)
+            // the reason why we also need to propagate local implicits
+            // instead of only for types
+            let local_implicits =
+                match prune arg_t with
+                | TImplicit instance ->
+                    IR.evidence_instance instance pos (IR.EVar symgen) false::local_implicits
+                | _ -> local_implicits
+            let ir_body =
+                topdown_check.run
+                    ( InstantiateTo ret_t
+                    , local_implicits
+                    )
+            IR.apply_implicits
+                (IR.EFun(symgen, arg_t, ir_body))
+                implicits
+                arrow_t
+                pos
+                local_implicits
+        }
+    | Surf.ELet(decls, expr) ->
+        let (delay_decls: IR.decl Lazy list, st_local) =
+                infer_decls st_global st_local decls false
+        let topdown_check = infer_expr st_global st_local expr
+        { run = fun (ti: type_info, local_implicits) ->
+             let ir_body = topdown_check.run(ti, local_implicits)
+             let inferred_decls = [for f in delay_decls -> f.Force()]
+             let ir_let = IR.ELet(inferred_decls, ir_body)
+             IR.expr pos ir_body.typ ir_let
+        }
+    | _ -> failwith "TODO"

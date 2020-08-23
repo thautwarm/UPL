@@ -15,7 +15,7 @@ type ty_expr =
 
 type decl =
 | DAnn of symbol * ty_expr
-| DOpen of ty_expr
+| DOpen of expr
 | DLoc of pos
 | DBind of symbol * expr
 | DQuery of string * symbol
