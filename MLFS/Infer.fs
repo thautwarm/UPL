@@ -6,6 +6,11 @@ open CamlCompat
 open Common
 open Exceptions
 
+type type_info =
+| NoPropagation
+| InstantiateTo of t
+
+type TopdownCheck = { run : (type_info * inst_resolv_ctx) -> IR.expr }
 // infer type
 let rec infer_t : global_st -> local_st -> Surf.ty_expr -> t =
     fun global_st local_st ty_expr ->
@@ -67,9 +72,9 @@ let rec infer_t : global_st -> local_st -> Surf.ty_expr -> t =
 
 
 // infer from Surf.decl
-let infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl Lazy list * local_st =
+let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl Lazy list * local_st =
     fun global_st local_st decls is_global ->
-    let {prune=prune}  = global_st.tcstate in
+    let {prune=prune; new_tvar}  = global_st.tcstate in
     let annotated = dict() in
     // a series of functions to postpone the top-down check&unification
     let rec recurse (rev_decls: IR.decl Lazy list, local_st: local_st) =
@@ -126,7 +131,52 @@ let infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl Laz
 
             annotated.[user_sym] <- scoped_type_variables;
             recurse (rev_decls, local_st) tl
-        | Surf.DBind _ -> failwith "TODO"
+        | Surf.DBind("_", expr) ->
+            let topdown_check = infer_expr global_st local_st expr
+            let lazy_decl =
+                lazy IR.Perform(topdown_check.run (NoPropagation, local_st.local_implicits))
+            let rev_decls = lazy_decl::rev_decls
+            recurse (rev_decls, local_st) tl
+        | Surf.DBind(user_sym, expr) ->
+            let symgen, ann_ty, scoped_type_variables =
+                match Dict.tryFind annotated user_sym with
+                | Some scoped_type_variables ->
+                    local_st.symmap.[user_sym]
+                    , prune (local_st.type_env.[user_sym])
+                    , scoped_type_variables
+                | _ ->
+                    let symgen = gensym global_st user_sym
+                    let tvar = new_tvar()
+                    let local_st =
+                        { local_st
+                          with type_env =
+                                Map.add user_sym symgen
+                                local_st.type_env
+                               symmap =
+                                Map.add user_sym tvar
+                                local_st.symmap
+                        }
+                    symgen, tvar, []
+            let local_st =
+                if List.isEmpty scoped_type_variables then
+                    local_st
+                else
+                    let old_type_env = local_st.type_env in
+                    let new_bindings =
+                        [|for un in scoped_type_variables -> un.name, TBound un|]
+                    { local_st with type_env = Map.let_seq old_type_env new_bindings }
+            let topdown_check_expr = infer_expr global_st local_st expr
+            let local_implicits = local_st.local_implicits
+            let lazy_decl =
+                lazy
+                 let propagation = (InstantiateTo ann_ty, local_implicits)
+                 IR.Assign(symgen, ann_ty, topdown_check_expr.run propagation)
+            let rev_decls = lazy_decl :: rev_decls
+            recurse (rev_decls, local_st) tl
+
         | Surf.DOpen _ -> failwith "TODO"
 
     in recurse ([], local_st) decls
+
+and infer_expr : global_st -> local_st -> Surf.expr -> TopdownCheck =
+    failwith ""

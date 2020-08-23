@@ -64,6 +64,9 @@ module Dict =
                 Some !v
             else None
 
+    let isEmpty : ('k, _) dict -> bool = fun this ->
+        this.Count = 0
+
 
 module List =
     let foreach xs f = List.iter f xs
