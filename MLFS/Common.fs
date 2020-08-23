@@ -5,7 +5,7 @@ module Common
 // variable naming convention:
 // pos, pos', position, *_pos, etc
 *)
-type pos = { line : int; col : int}
+type pos = { line : int; col : int; filename : string}
 
 type symbol = string
 
