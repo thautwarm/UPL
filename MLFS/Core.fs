@@ -1,9 +1,6 @@
 module Core
-// position
-// variable naming convention:
-// pos, pos', position, *_pos, etc
-type pos = { line : int; col : int}
 
+open Common
 // for type class resolution
 // this record holds a variable(field 'exp') with the info of
 // 1. pos: where it's defined(source code position)
