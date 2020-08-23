@@ -28,7 +28,7 @@ let current_runtime_time_ns = time_ns()
 let un (name: string) =
   { time_ns = current_runtime_time_ns
   ; name = name
-  ; runtime_id = 
+  ; runtime_id =
       let i = !current_runtime_id_count in
       let _ = incr current_runtime_id_count in i
   }

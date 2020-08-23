@@ -261,7 +261,6 @@ let less_than_under_evidences : t -> t -> bool * t darray =
     function
     | TVar i when Dict.contains subst_table i ->
       subst_table.[i]
-    | root -> generic_transform subst root 
+    | root -> generic_transform subst root
   in
   small_tc.unifyImplicits evidences (subst lhs) (subst rhs), evidences
-  
