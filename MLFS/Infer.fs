@@ -15,7 +15,7 @@ let rec infer_t : global_st -> local_st -> Surf.ty_expr -> t =
     match
         match ty_expr with
         | Surf.TNew tn ->
-            sprintf "%A@(%A, %A)" tn pos.line <| gensym global_st
+            gensym global_st (sprintf "%A" tn)
             |> TNom |> T
         | Surf.TImplicit ty_expr ->
             T(TImplicit <| infer_t global_st local_st ty_expr)
@@ -64,3 +64,69 @@ let rec infer_t : global_st -> local_st -> Surf.ty_expr -> t =
             raise <|
             InferError(pos, UnificationFail(prune typetype', prune typetype))
         else prune tvar
+
+
+// infer from Surf.decl
+let infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl Lazy list * local_st =
+    fun global_st local_st decls is_global ->
+    let {prune=prune}  = global_st.tcstate in
+    let annotated = dict() in
+    // a series of functions to postpone the top-down check&unification
+    let rec recurse (rev_decls: IR.decl Lazy list, local_st: local_st) =
+        function
+        | [] -> List.rev rev_decls, local_st
+        | hd::tl ->
+        match hd with
+        | Surf.DQuery(label, user_sym) ->
+            match Map.tryFind user_sym local_st.type_env with
+            | None ->
+                raise <| InferError(local_st.pos, UnboundVar user_sym)
+            | Some ty ->
+                DArray.push global_st.queries (label, ty);
+                recurse (rev_decls, local_st) tl
+        | Surf.DLoc pos ->
+            recurse (rev_decls, {local_st with pos = pos}) tl
+        | Surf.DAnn(user_sym, ty_expr) ->
+            match Dict.tryFind annotated user_sym with
+            | Some t ->
+                raise
+                <| InferError(local_st.pos, UnusedAnnotation(user_sym, ty_expr))
+            | None ->
+            let symgen = gensym global_st user_sym
+            let ann_ty = infer_t global_st local_st ty_expr
+            let mutable local_st =
+                { local_st
+                   with symmap = Map.add user_sym symgen local_st.symmap
+                        type_env = Map.add user_sym ann_ty local_st.type_env }
+            let scoped_type_variables =
+                match ann_ty with
+                | TForall(ns, _) -> ns
+                | TImplicit im when is_global ->
+                    let im = prune im
+                    match im with
+                    | TVar _ | TBound _ ->
+                        raise <| InferError(local_st.pos, MalformedTypeClassKind im)
+                    | _ ->
+                    let class_head = get_type_head im
+                    let global_implicits =
+                        Dict.getForce global_st.global_implicits class_head <| fun _ ->
+                            darray()
+                    let _ =
+                        DArray.push global_implicits <|
+                        IR.evidence_instance im local_st.pos (IR.EVar symgen) false
+                    let _ =
+                        global_st.global_implicits_deltas.[class_head] <-
+                        1 + Dict.getForce global_st.global_implicits_deltas class_head (fun _ -> 0)
+                    []
+                | TImplicit im ->
+                   let inst = IR.evidence_instance im local_st.pos (IR.EVar symgen) false in
+                   let _ = local_st <- {local_st with local_implicits = inst::local_st.local_implicits }
+                   []
+                | _ -> []
+
+            annotated.[user_sym] <- scoped_type_variables;
+            recurse (rev_decls, local_st) tl
+        | Surf.DBind _ -> failwith "TODO"
+        | Surf.DOpen _ -> failwith "TODO"
+
+    in recurse ([], local_st) decls

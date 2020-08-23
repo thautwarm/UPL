@@ -16,6 +16,7 @@ let (|T|_|) x =
   | _ -> None
 
 // to speed up instance resolution
+// avoid applying it on TVar or TBound variants!
 let rec get_type_head =
   function
   | HM.TNom _ as h -> h
@@ -31,6 +32,8 @@ type global_st =
   { tcstate : HMUnification.tcstate
   // for global resolution
   ; global_implicits : (HM.t, evidence_instance darray) dict
+
+  ; global_implicits_deltas : (HM.t, int) dict
   // for type holes and hints
   ; queries : (string * HM.t) darray
   // for gensym
@@ -42,6 +45,7 @@ type global_st =
 let empty_global_st () =
   { tcstate = HMUnification.mk_tcstate <| darray()
   ; global_implicits = dict()
+  ; global_implicits_deltas = dict()
   ; queries = darray()
   ; count = ref 0
   ; current_module_name = "main"
@@ -63,12 +67,12 @@ let empty_local_st =
   ; symmap = Map.empty
   ; local_implicits = []
   ; pos = {line = 1; col = 1; filename = "<unknown>"}
-  }  
+  }
 
 
 let alphabeta = [|for i = 'a' to 'z' do yield i|]
 
-let gensym (g: global_st) =
+let gensym (g: global_st) (major : string) =
   let mutable i = !g.count + 1 in
   g.count := i + 1;
   let chars = darray() in
@@ -78,4 +82,4 @@ let gensym (g: global_st) =
     i <- i / 26
   done;
   // System.String.Concat : char iterable -> string
-  System.String.Concat chars
+  sprintf "|%s|%s|%s|" major g.current_module_name (System.String.Concat chars)

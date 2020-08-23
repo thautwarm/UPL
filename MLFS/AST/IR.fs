@@ -10,10 +10,10 @@ open CamlCompat
 // variable naming convention:
 // evi, inst, ei, *_ei, *_evi, *_inst
 type evidence_instance
-    = { mutable t   : HM.t;
-        pos : pos;
-        isPruned : bool;
-        impl : expr_impl
+    = { mutable t   : HM.t
+      ; pos : pos
+      ; impl : expr_impl
+      ; mutable isPruned : bool
       }
 
 // instance resolution context.
@@ -101,3 +101,6 @@ let gen_trans_expr : 'ctx transformer -> 'ctx -> expr  -> expr
     = fun ({expr_impl=expr_impl_} as self) ctx ->
     fun ({impl = impl} as expr) ->
     { expr with impl = expr_impl_ self ctx impl }
+
+let evidence_instance t pos impl isPruned =
+    {t = t; pos = pos; impl = impl; isPruned = isPruned}

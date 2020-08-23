@@ -57,6 +57,13 @@ module Dict =
     let contains : ('k, 'v) dict -> 'k -> bool =
         fun this k -> this.ContainsKey k
 
+    let tryFind : ('k, 'v) dict -> 'k -> 'v option =
+        fun this k ->
+            let v = ref (Unchecked.defaultof<'v>) in
+            if this.TryGetValue(k, v) then
+                Some !v
+            else None
+
 
 module List =
     let foreach xs f = List.iter f xs
