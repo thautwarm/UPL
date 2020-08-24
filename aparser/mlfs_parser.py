@@ -92,7 +92,7 @@ def mk():
   def Expr(pos, typ, impl):
     return {'pos':pos,  'typ': typ, 'impl': impl}
   def Pos(token):
-    return {'line': token.lineno, 'col': token.colno, 'filename': token.filename}
+    return {'line': token.lineno + 1, 'col': token.colno, 'filename': token.filename}
   def ModuleRecord(name, imports, decls):
     return dict(name=name, imports=imports, decls=decls)
   out['ModuleRecord'] = ModuleRecord

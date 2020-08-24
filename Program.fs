@@ -28,5 +28,5 @@ let main argv =
     printfn "invalid json input!"
     1 // return an integer exit code
     with InferError({line=line; col=col; filename=filename}, a) ->
-     printf "at %A, line %A, column %A:\n%A" filename line col a
+     printf "at %O, line %O, column %O:\n%O" filename line col a
      reraise()

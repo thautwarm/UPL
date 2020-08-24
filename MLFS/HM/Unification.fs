@@ -68,16 +68,15 @@ let mk_tcstate (tenv: t darray)
       in
     let link : int -> t -> t =
         fun typeref t ->
-
-        match
-            match t with
-            | TBound un ->  Some un
-            | _ -> None
-            with
+        match match t with
+              | TBound un ->  Some un
+              | _ -> None
+              with
         | None ->
            let _ = DArray.set tenv typeref t
            in t
         | Some un ->
+            let _ = DArray.set tenv typeref t
             let links =
                 Dict.getForce bound_links un <|
                 fun _ -> DSet.ofList [typeref]
@@ -128,6 +127,7 @@ let mk_tcstate (tenv: t darray)
         let rhs = prune rhs in
         if lhs = rhs then true
         else
+        // printfn "%O ~ %O" lhs rhs;
         match lhs, rhs with
         | TForall(_, lhs), _ ->
           unifyInsts lhs rhs

@@ -37,7 +37,7 @@ let mk_post_infer (g: global_st) =
             Assign(a, _check_prune pos t, expr_ self pos e)
     let post_infer_expr
         ({ expr_impl = expr_impl_
-        } as self) pos =
+        } as self) _ =
         function
         | {pos = pos; typ = typ; impl=impl} ->
             let impl = expr_impl_ self pos impl

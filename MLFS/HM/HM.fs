@@ -1,7 +1,7 @@
 (* almost the vanilla Damas-Hindley-Milner
  type system
  *)
-module HM
+module rec HM
 
 open CamlCompat
 
@@ -56,6 +56,8 @@ type t =
   (* for higher rank types, this is not required *)
   (* implicit type is from type class *)
   | TImplicit of t
+  with override me.ToString() = HM.show_t me
+
 
 let top_t =
   let un = un "a" in
