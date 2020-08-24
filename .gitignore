@@ -4,3 +4,8 @@ obj/
 .fake
 .config/
 coveragereport/
+dexe_smlfs/publish/
+
+*.egg-info/
+build/
+dist/

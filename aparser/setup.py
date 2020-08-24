@@ -25,7 +25,7 @@ setup(
     },
     # above option specifies what commands to install,
     # e.g: entry_points={"console_scripts": ["yapypy=yapypy.cmd:compiler"]}
-    install_requires=["wisepy2>=1.1.1"],  # dependencies
+    install_requires=["wisepy2>=1.1.1", 'dexe-smlfs'],  # dependencies
     platforms="any",
     classifiers=[
         "Programming Language :: Python :: 3.7",
