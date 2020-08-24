@@ -15,13 +15,13 @@ def mlfsc(*vargs, name="main", sigs="", o="./"):
             mlfsf(src_file, f)
             src_files[i] = f
 
-    sig_files = list(map(dumps, filter(lambda x: x, sig.split(";"))))
+    sig_files = list(map(dumps, filter(lambda x: x, sigs.split(";"))))
 
     json = dict(
         sig_files=sig_files,
         src_files=src_files,
         out_dir=out_dir,
-        out_lib_dir=name)
+        out_lib_name=name)
     call(['smlfs', dumps(json)])
 
 def entry():

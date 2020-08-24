@@ -48,7 +48,7 @@ def mk():
   TForall = "TForall"
   TApp = "TApp"
   TArrow = "TArrow"
-  TTuple = "TTuple"
+  TTup = "TTup"
   TImplicit = "TImplicit"
   TVar = "TVar"
   TSym = "TSym"
@@ -72,7 +72,6 @@ def mk():
   EExt = "EExt"
   EQuery = "EQuery"
   EField = "EField"
-  ModuleRecord = "ModuleRecord"
   I64 = "I64"
   F64 = "F64"
   Str = "Str"
@@ -94,7 +93,9 @@ def mk():
     return {'pos':pos,  'typ': typ, 'impl': impl}
   def Pos(token):
     return {'line': token.lineno, 'col': token.colno, 'filename': token.filename}
-
+  def ModuleRecord(name, imports, decls):
+    return dict(name=name, imports=imports, decls=decls)
+  out['ModuleRecord'] = ModuleRecord
   out['Expr'] = Expr
   out['Pos'] = Pos
   return out
@@ -2917,7 +2918,7 @@ def mk_parser():
                                 lcl_8 = (False, lcl_8)
                                 lcl_7 = lcl_8
                             else:
-                                lcl_8 = mk_tuple(TTuple, rbnf_tmp_1)
+                                lcl_8 = mk_tuple(TTup, rbnf_tmp_1)
                                 rbnf_tmp_1_ = lcl_8
                                 lcl_8 = (True, rbnf_tmp_1_)
                                 lcl_7 = lcl_8
@@ -2951,7 +2952,7 @@ def mk_parser():
                                 lcl_8 = (False, lcl_8)
                                 lcl_7 = lcl_8
                             else:
-                                lcl_8 = mk_tuple(TTuple, rbnf_tmp_1)
+                                lcl_8 = mk_tuple(TTup, rbnf_tmp_1)
                                 rbnf_tmp_1_ = lcl_8
                                 lcl_8 = (True, rbnf_tmp_1_)
                                 lcl_7 = lcl_8
@@ -2985,7 +2986,7 @@ def mk_parser():
                                 lcl_8 = (False, lcl_8)
                                 lcl_7 = lcl_8
                             else:
-                                lcl_8 = mk_tuple(TTuple, rbnf_tmp_1)
+                                lcl_8 = mk_tuple(TTup, rbnf_tmp_1)
                                 rbnf_tmp_1_ = lcl_8
                                 lcl_8 = (True, rbnf_tmp_1_)
                                 lcl_7 = lcl_8
@@ -3019,7 +3020,7 @@ def mk_parser():
                                 lcl_8 = (False, lcl_8)
                                 lcl_7 = lcl_8
                             else:
-                                lcl_8 = mk_tuple(TTuple, rbnf_tmp_1)
+                                lcl_8 = mk_tuple(TTup, rbnf_tmp_1)
                                 rbnf_tmp_1_ = lcl_8
                                 lcl_8 = (True, rbnf_tmp_1_)
                                 lcl_7 = lcl_8
@@ -3053,7 +3054,7 @@ def mk_parser():
                                 lcl_8 = (False, lcl_8)
                                 lcl_7 = lcl_8
                             else:
-                                lcl_8 = mk_tuple(TTuple, rbnf_tmp_1)
+                                lcl_8 = mk_tuple(TTup, rbnf_tmp_1)
                                 rbnf_tmp_1_ = lcl_8
                                 lcl_8 = (True, rbnf_tmp_1_)
                                 lcl_7 = lcl_8
@@ -3066,7 +3067,7 @@ def mk_parser():
                         lcl_6 = _rbnf_cur_token
                         rbnf_tmp_1 = lcl_6
                         lcl_6 = []
-                        lcl_6 = TTuple(lcl_6)
+                        lcl_6 = TTup(lcl_6)
                         rbnf_tmp_1_ = lcl_6
                         lcl_6 = (True, rbnf_tmp_1_)
                         lcl_4 = lcl_6
@@ -3098,7 +3099,7 @@ def mk_parser():
                                 lcl_8 = (False, lcl_8)
                                 lcl_7 = lcl_8
                             else:
-                                lcl_8 = mk_tuple(TTuple, rbnf_tmp_1)
+                                lcl_8 = mk_tuple(TTup, rbnf_tmp_1)
                                 rbnf_tmp_1_ = lcl_8
                                 lcl_8 = (True, rbnf_tmp_1_)
                                 lcl_7 = lcl_8
@@ -3132,7 +3133,7 @@ def mk_parser():
                                 lcl_8 = (False, lcl_8)
                                 lcl_7 = lcl_8
                             else:
-                                lcl_8 = mk_tuple(TTuple, rbnf_tmp_1)
+                                lcl_8 = mk_tuple(TTup, rbnf_tmp_1)
                                 rbnf_tmp_1_ = lcl_8
                                 lcl_8 = (True, rbnf_tmp_1_)
                                 lcl_7 = lcl_8

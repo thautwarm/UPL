@@ -9,3 +9,4 @@ dexe_smlfs/publish/
 *.egg-info/
 build/
 dist/
+examples/out-*/

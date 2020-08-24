@@ -6,7 +6,7 @@ with Path("../README.md").open() as readme:
 version = 0.1
 setup(
     # distclass=BinaryDistribution,
-    name="smlfs",
+    name="mlfsc",
     version=version if isinstance(version, str) else str(version),
     keywords="Standard MLFS compiler",  # keywords of your project that separated by comma ","
     description="",  # a concise introduction of your project

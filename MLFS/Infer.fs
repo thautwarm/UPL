@@ -54,7 +54,7 @@ let rec infer_t : global_st -> local_st -> Surf.ty_expr -> t =
             let unique_ns = List.map un bounds in
             let type_env = local_st.type_env in
             let new_bindings =
-                [|for un in unique_ns -> un.name, TBound un|] in
+                [|for un in unique_ns -> un.name, T <| TBound un|] in
             let p =
                 infer_t
                     global_st

@@ -1,5 +1,6 @@
 ﻿open FSharp.Json
-
+open Exceptions
+open Common
 type Args =
     { src_files : string list
     ; sig_files : string list
@@ -9,6 +10,7 @@ type Args =
 
 [<EntryPoint>]
 let main argv =
+    try
     match argv with
     | [|a|] ->
         let { src_files=src_files
@@ -25,3 +27,6 @@ let main argv =
     | _ ->
     printfn "invalid json input!"
     1 // return an integer exit code
+    with InferError({line=line; col=col; filename=filename}, a) ->
+     printf "at %A, line %A, column %A:\n%A" filename line col a
+     reraise()

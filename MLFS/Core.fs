@@ -3,6 +3,13 @@ module Core
 open Common
 open CamlCompat
 
+let type_type = HM.TNom "Type"
+let T x = HM.TApp(type_type, x)
+let (|T|_|) x =
+  match x with
+  | HM.TApp(HM.TNom "Type", x) -> Some x
+  | _ -> None
+
 type evidence_instance = IR.evidence
 type inst_resolv_ctx = IR.evidence_resolv_ctx
 
@@ -11,7 +18,7 @@ let general_class = HM.TNom "general_class"
 let namespace_class = HM.TNom "namespace"
 let field_class = HM.TNom "field"
 let module_class = HM.TNom "Module"
-let type_type = HM.TNom "Type"
+
 
 let int_ts =
   Map.ofList [
@@ -36,11 +43,6 @@ let char_t = HM.TNom "char"
 let bool_t = HM.TNom "bool"
 
 
-let T x = HM.TApp(type_type, x)
-let (|T|_|) x =
-  match x with
-  | HM.TApp(HM.TNom "Type", x) -> Some x
-  | _ -> None
 
 // to speed up instance resolution
 // avoid applying it on TVar or TBound variants!
@@ -119,8 +121,8 @@ let (|MustBeNom|) t =
 
 let predef =
   Map.ofList
-  <| [ for KV(_,  MustBeNom n & t) in float_ts -> n, t ]
-   @ [ for KV(_,  MustBeNom n & t) in int_ts -> n, t ]
+  <| [ for KV(_,  MustBeNom n & t) in float_ts -> n, T t ]
+   @ [ for KV(_,  MustBeNom n & t) in int_ts -> n, T t ]
    @ [ for MustBeNom n & t in
      [ namespace_class
      ; field_class
@@ -129,7 +131,7 @@ let predef =
      ; char_t
      ; str_t
      ; bool_t
-     ] -> n, t]
+     ] -> n, T t]
 
 let show_hints (g: global_st) =
   let prune = g.tcstate.prune

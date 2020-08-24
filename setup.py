@@ -39,7 +39,7 @@ setup(
     install_requires=[],
     package_data={
         'dexe_smlfs':
-            [each[len('dexe_smlfs'):]
+            [each[len('dexe_smlfs/'):]
              for each in glob.glob("dexe_smlfs/publish/**", recursive=True)]
     },
     entry_points={"console_scripts": [

@@ -1,8 +1,0 @@
-module M
-let x = 1
-
-val x : (forall a. a -> a) -> (int, str)
-let x = fun f -> (f 1, f 2)
-
-val z : { int -> int }
-let z = fun v -> add v 1

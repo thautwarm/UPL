@@ -18,7 +18,7 @@ def mk():
   TForall = "TForall"
   TApp = "TApp"
   TArrow = "TArrow"
-  TTuple = "TTuple"
+  TTup = "TTup"
   TImplicit = "TImplicit"
   TVar = "TVar"
   TSym = "TSym"
@@ -42,7 +42,6 @@ def mk():
   EExt = "EExt"
   EQuery = "EQuery"
   EField = "EField"
-  ModuleRecord = "ModuleRecord"
   I64 = "I64"
   F64 = "F64"
   Str = "Str"
@@ -64,7 +63,9 @@ def mk():
     return {'pos':pos,  'typ': typ, 'impl': impl}
   def Pos(token):
     return {'line': token.lineno, 'col': token.colno, 'filename': token.filename}
-
+  def ModuleRecord(name, imports, decls):
+    return dict(name=name, imports=imports, decls=decls)
+  out['ModuleRecord'] = ModuleRecord
   out['Expr'] = Expr
   out['Pos'] = Pos
   return out
@@ -128,8 +129,8 @@ calltype : calltype type { TApp($1, $2) }
 nameStr : <name> { $1.value };
 
 type : tvar { $1 }
-     | '(' ')'                        { TTuple([]) }
-     | '(' sep_list[',', toptype] ')' { mk_tuple(TTuple, $2) }
+     | '(' ')'                        { TTup([]) }
+     | '(' sep_list[',', toptype] ')' { mk_tuple(TTup, $2) }
      | '{' toptype '}' { TImplicit($2) }
      | <str> { TSym(parse_str($1.value)) }
      | '@' <name> { TNew($2.value) }
