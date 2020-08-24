@@ -1,7 +1,2 @@
-bash build.sh
-
-cd aparser
-bash build.sh
-cd ..
-
+bash install-all.sh
 bash test.sh
