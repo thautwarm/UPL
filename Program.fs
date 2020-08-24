@@ -1,8 +1,4 @@
-﻿// Learn more about F# at http://fsharp.org
-
-open System
-open FSharp.Json
-
+﻿open FSharp.Json
 
 type Args =
     { src_files : string list
@@ -14,7 +10,18 @@ type Args =
 [<EntryPoint>]
 let main argv =
     match argv with
-    | [|a|] -> Json.deserialize<Args> a
+    | [|a|] ->
+        let { src_files=src_files
+            ; sig_files=sig_files
+            ; out_dir=out_dir
+            ; out_lib_name=out_lib_name
+            } = Json.deserialize<Args> a
+        Modular.smlfs_compile
+            src_files
+            sig_files
+            out_lib_name
+            out_dir
+        0
     | _ ->
-    printfn "Hello World from F#!"
-    0 // return an integer exit code
+    printfn "invalid json input!"
+    1 // return an integer exit code
