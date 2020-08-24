@@ -3,6 +3,8 @@ module CamlCompat
 
 let readFile = System.IO.File.ReadAllText
 let writeFile f contents = System.IO.File.WriteAllText(f, contents)
+let joinPath a b =
+        System.IO.Path.Join [|a; b|]
 
 let time_ns ()
     = System.DateTime.UtcNow.Ticks

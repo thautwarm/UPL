@@ -130,3 +130,9 @@ let predef =
      ; str_t
      ; bool_t
      ] -> n, t]
+
+let show_hints (g: global_st) =
+  let prune = g.tcstate.prune
+  for (k, v) in g.queries do
+    printf "%A : %A" k <| prune v
+  done

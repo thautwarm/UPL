@@ -75,11 +75,6 @@ let mk_post_infer (g: global_st) =
 let module_gensym n = "mlfs_" ^ n
 
 type path = string
-let smlfs_compile : path list -> path list -> symbol -> string -> unit =
-    fun src_fles sig_files out_library_name out_directory ->
-    let loadedModules = DSet.ofList []
-    let g = empty_global_st()
-    failwith ""
 
 
 let load_module :
@@ -88,7 +83,7 @@ let load_module :
     -> Surf.decl list
     -> path
     -> global_st
-    -> IR.decl darray
+    -> IR.decl list
     = fun module_name imports decls path g ->
     let {prune = prune} = g.tcstate
     let g = {g with current_module_name = module_name}
@@ -166,10 +161,8 @@ let load_module :
 
     g.global_implicits_deltas.[field_class] <- namespace_inst_cnt + 1
 
-    DArray.push results
-    <| Assign(module_gensym module_name, module_type, untyped_expr <| IR.EVal (I16 0s))
-
-    results
+    let results = mk_post_infer g pos (List.ofSeq results)
+    Assign(module_gensym module_name, module_type, untyped_expr <| IR.EVal (I16 0s))::results
 
 let raise_conflict_names : string seq -> 'a =
     fun reloadedModules ->
@@ -241,3 +234,18 @@ let load_srcs :
     { module_names = List.ofSeq module_names
     ; implicits = implicits
     }
+
+let smlfs_compile : path list -> path list -> symbol -> string -> unit =
+    fun src_fles sig_files out_library_name out_directory ->
+    let loadedModules = DSet.ofList []
+    let g = empty_global_st()
+
+    load_sigs sig_files loadedModules g
+    let decls, signature = load_srcs src_fles loadedModules g
+    show_hints g
+
+    let declJSON = Json.serialize <| Array.ofSeq decls
+    writeFile (joinPath out_directory <| sprintf "%s.mlfso" out_library_name) declJSON
+
+    let sigJSON = Json.serialize signature
+    writeFile (joinPath out_directory <| sprintf "%s.mlfsa" out_library_name) sigJSON
