@@ -27,7 +27,7 @@ and evidence_resolv_ctx = evidence list
 
 and expr =
     { pos : pos
-    ; typ : HM.t option
+    ; typ : HM.t
     ; impl : expr_impl
     }
     (* for F# overloading *)
@@ -56,17 +56,17 @@ let apply_implicits : expr_impl -> HM.t darray -> HM.t -> pos -> evidence_resolv
     let e = ref e in
     for im in implicits do
         e := EIm(
-            {pos=pos; typ=None; impl= !e}, im, local_implicits);
+            {pos=pos; typ=HM.top_t; impl= !e}, im, local_implicits);
     done;
-    {pos = pos; typ = Some final_type; impl= !e}
+    {pos = pos; typ = final_type; impl= !e}
 
 let apply_explicits : expr_impl -> expr array -> HM.t -> pos -> expr =
     fun e_impl explicits final_type pos ->
     let e_impl = ref e_impl in
     for explicit in explicits do
-        e_impl := EApp(expr pos None !e_impl, explicit);
+        e_impl := EApp(expr pos HM.top_t !e_impl, explicit);
     done;
-    expr pos (Some final_type) !e_impl
+    expr pos final_type !e_impl
 
 type ('ctx, 'a) trans = 'ctx -> 'a -> 'a
 type 'ctx transformer =

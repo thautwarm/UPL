@@ -38,6 +38,13 @@ module DArray =
 
     let isEmpty (this: 'a darray) = this.Count = 0
 
+    let last_n (this: _ darray) n =
+        if n < 0 then
+            darray()
+        else
+        let len = len this in
+        if n >= len then darray(this)
+        else this.GetRange(len-n, n)
 
 type ('k, 'v) dict = System.Collections.Generic.Dictionary<'k, 'v>
 

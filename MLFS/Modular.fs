@@ -39,13 +39,12 @@ let mk_post_infer (g: global_st) =
         ({ expr_impl = expr_impl_
         } as self) pos =
         function
-        | {pos = pos; typ = Some typ; impl=impl} ->
+        | {pos = pos; typ = typ; impl=impl} ->
             let impl = expr_impl_ self pos impl
-            let ty = _check_prune pos typ
-            {pos = pos; typ=Some typ; impl=impl}
-        | {pos = pos; typ = None; impl=impl} as o ->
-            let impl = expr_impl_ self pos impl
-            { o with impl = impl }
+            let typ = if typ = top_t
+                      then top_t
+                      else  _check_prune pos typ
+            {pos = pos; typ=typ; impl=impl}
     let post_infer_expr_impl
         ({ expr = expr_
         } as self) pos =
@@ -66,7 +65,7 @@ let mk_post_infer (g: global_st) =
     let main = post_infer_expr_impl self
     let post_infer_decls pos decls =
         match
-            ELet(decls, expr pos None <| IR.EVal(I64 0L))
+            ELet(decls, expr pos top_t <| IR.EVal(I64 0L))
             |> main pos
           with
         | ELet(decls, _) -> decls
@@ -109,7 +108,7 @@ let load_module :
     let results, local_tc = infer_decls g l decls true in
     let results = darray([|for i in results -> i.Force()|])
     let pos = {line = 1; col = 1; filename = path} in
-    let untyped_expr impl = {typ=None; pos=pos;impl=impl}
+    let untyped_expr impl = {typ=top_t; pos=pos;impl=impl}
     let field_inst_cnt, field_instances =
             (Dict.getForce g.global_implicits_deltas field_class <| fun _ -> 0)
             , Dict.getForce g.global_implicits field_class <| fun _ ->
@@ -172,6 +171,11 @@ let load_module :
 
     results
 
+let raise_conflict_names : string seq -> 'a =
+    fun reloadedModules ->
+    failwithf
+        "modile name conflicts: duplicate modules with the same names:\n %A"
+        <| String.concat "\n" (Seq.map (fun a -> "- " ^ a) reloadedModules)
 
 let load_sigs : path list -> symbol dset -> global_st -> unit =
     fun sig_files loaded_modules g ->
@@ -182,9 +186,7 @@ let load_sigs : path list -> symbol dset -> global_st -> unit =
             } = Json.deserialize<library_signature> src_code
         let reloadedModules = DSet.intersect loaded_modules module_names
         if DSet.isEmpty reloadedModules then
-            failwithf
-                "modile name conflicts: duplicate modules with the same names:\n %A"
-                <| String.concat "\n" (Seq.map (fun a -> "- " ^ a) reloadedModules)
+            raise_conflict_names reloadedModules
         let _ = DSet.update loaded_modules module_names
         for (t_head, insts) in implicits do
             let global_implicits = Dict.getForce g.global_implicits t_head <| fun _ ->
@@ -197,4 +199,45 @@ let load_srcs :
     path list
     -> symbol dset
     -> global_st
-    -> decl darray * library_signature = failwith ""
+    -> decl darray * library_signature
+    = fun src_files loaded_modules g ->
+    let global_implicits = g.global_implicits
+    let global_implicits_deltas = g.global_implicits_deltas
+    let decls = darray()
+    let module_names = darray()
+    let {prune = prune} = g.tcstate
+    for path in src_files do
+        let { Surf.name = name
+            ; Surf.imports = imports
+            ; Surf.decls = surf_decls
+            } =
+             Json.deserialize<Surf.module_record>
+             <| readFile path
+        if DSet.contains loaded_modules name
+        then
+            raise_conflict_names [name]
+        else
+
+        DSet.add loaded_modules name;
+        DArray.push module_names name;
+        DArray.extend decls
+        <| load_module name imports surf_decls path g
+    done;
+    let prune_evi : evidence -> evidence =
+        fun evi ->
+            if not <| evi.isPruned then
+                evi.t <- prune evi.t
+                evi.isPruned <- true
+            evi
+    let implicits =
+        [| for KV(nom, n) in global_implicits_deltas ->
+            ( nom
+            , DArray.last_n (global_implicits.[nom]) n
+              |> Seq.map prune_evi
+              |> Array.ofSeq
+            )
+        |]
+    decls,
+    { module_names = List.ofSeq module_names
+    ; implicits = implicits
+    }

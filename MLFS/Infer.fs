@@ -5,10 +5,17 @@ open HMUnification
 open CamlCompat
 open Common
 open Exceptions
+open TypeClass
 
 type type_info =
 | NoPropagation
 | InstantiateTo of t
+
+let map_type_info : (t -> t) -> type_info -> type_info =
+    fun f ->
+    function
+    | NoPropagation -> NoPropagation
+    | InstantiateTo t -> InstantiateTo <| f t
 
 type topdown_check = { run : (type_info * inst_resolv_ctx) -> IR.expr }
 // infer type
@@ -93,9 +100,9 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
             recurse (rev_decls, {local_st with pos = pos}) tl
         | Surf.DAnn(user_sym, ty_expr) ->
             match Dict.tryFind annotated user_sym with
-            | Some t ->
+            | Some _ ->
                 raise
-                <| InferError(local_st.pos, UnusedAnnotation(user_sym, ty_expr))
+                <| InferError(local_st.pos, UnusedAnnotation user_sym)
             | None ->
             let symgen = gensym global_st user_sym
             let ann_ty = infer_t global_st local_st ty_expr
@@ -175,9 +182,50 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
 
         | Surf.DOpen expr ->
             let topdown_check = infer_expr global_st local_st expr
-            let ex = topdown_check.run (NoPropagation, local_st.local_implicits)
-            failwith "TODO"
-
+            let { pos=pos
+                ; local_implicits=local_implicits
+                ; type_env = old_type_env
+                ; symmap = old_symmap
+                } = local_st
+            let module' = topdown_check.run (NoPropagation, local_implicits)
+            let fields_type = new_tvar()
+            let target =
+                    TApp
+                      ( namespace_class
+                      , TTup[module'.typ; fields_type]
+                      )
+            let _ = inst_resolve global_st local_implicits target pos
+            let (|ValidNamespace|InvalidNamespace|) x =
+                match x with
+                | TTup xs ->
+                    let rec recurse res = function
+                        | [] -> ValidNamespace res
+                        | TNom n::tl ->
+                            recurse (n::res) tl
+                        | _ -> InvalidNamespace x
+                    in recurse [] xs
+                | _ -> InvalidNamespace x
+            match prune fields_type with
+            | InvalidNamespace x -> raise <| InferError(pos, InvalidNamespaceType x)
+            | ValidNamespace fieldnames ->
+            let user_sym_gen = gensym global_st "user_open"
+            let sym_gen = gensym global_st "open"
+            annotated.[user_sym_gen] <- [];
+            let local_st = {
+                 local_st
+                   with type_env =
+                            Map.add user_sym_gen module'.typ old_type_env
+                        symmap =
+                            Map.add user_sym_gen sym_gen old_symmap
+               }
+            let rev_decls =
+                    lazy IR.Assign(sym_gen, module'.typ, module') :: rev_decls
+            let tl =
+                [ for f in fieldnames
+                -> Surf.DBind(f, Surf.EField(Surf.EVar user_sym_gen, f))
+                ]
+                @ tl
+            in recurse (rev_decls, local_st) tl
 
     in recurse ([], local_st) decls
 
@@ -189,7 +237,7 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
         ; unifyInsts = unifyInsts
         ; new_tvar = new_tvar
         } = st_global.tcstate
-    let local_implicits = st_local.local_implicits
+
     let pos = st_local.pos
     let apply_prop : type_info -> t -> t * t darray
         = fun ti me ->
@@ -209,7 +257,7 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
                 let leaf_type, implicits = apply_prop ti leaf_type
                 match prune leaf_type with
                 | T t ->
-                    IR.expr pos (Some leaf_type) (IR.ETypeVal t)
+                    IR.expr pos leaf_type (IR.ETypeVal t)
                 | leaf_type ->
                     IR.apply_implicits impl implicits leaf_type pos local_implicits
             }
@@ -225,11 +273,7 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
         let queries = st_global.queries
         { run = fun (ti: type_info, local_implicits) ->
             let e = topdown_check.run (ti, local_implicits)
-            (match e.typ with
-            | Some t -> DArray.push queries (label, t)
-            // should prove this won't happen
-            // typ = None happens only when applying implicit arguments
-            | None -> failwith "compiler internal error");
+            DArray.push queries (label, e.typ);
             e
         }
     | Surf.ELoc(pos, expr) ->
@@ -304,6 +348,43 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
                 pos
                 local_implicits
         }
+    | Surf.EField(subject, fieldname) ->
+        let topdown_check_subject =
+                infer_expr st_global st_local subject
+        { run = fun (ti: type_info, local_implicits) ->
+            let ir_sub = topdown_check_subject.run(NoPropagation, local_implicits)
+            let ty_sub = ir_sub.typ
+
+            let (|NewPrune|) _ = new_tvar()
+            // if any expected type for 'a.b', we apply the propagation first.
+            // otherwise we use type class to solve the expected type.
+            match map_type_info prune ti with
+            | InstantiateTo (TVar _ as ret_tv)
+            | NoPropagation & NewPrune ret_tv ->
+                let target =
+                        TApp
+                          ( field_class
+                          , TTup[ty_sub; TNom fieldname; ret_tv]
+                          )
+                let ir_field_accessor =
+                      inst_resolve st_global local_implicits target pos
+                IR.expr pos target <|
+                IR.EApp(ir_field_accessor, ir_sub)
+            | ti ->
+                let ret_tv, implicits = apply_prop ti <| new_tvar()
+                let target =
+                     TApp
+                        ( field_class
+                        , TTup [ty_sub; TNom fieldname; ret_tv])
+                let ir_field_accessor =
+                        inst_resolve st_global local_implicits target pos
+                IR.apply_implicits
+                    (IR.EApp(ir_field_accessor, ir_sub))
+                    implicits
+                    ret_tv
+                    pos
+                    local_implicits
+        }
     | Surf.ELet(decls, expr) ->
         let (delay_decls: IR.decl Lazy list, st_local) =
                 infer_decls st_global st_local decls false
@@ -360,4 +441,3 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
         | Some var_t ->
         let var_t = prune var_t
         propagate_for_leaf var_t (IR.EVar user_sym)
-    | _ -> failwith ""

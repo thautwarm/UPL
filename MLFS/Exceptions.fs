@@ -9,6 +9,7 @@ type Signal =
 | UnificationFail of HM.t * HM.t
 | UnsolvedTypeVariables of HM.t
 | UnboundVar of symbol
-| UnusedAnnotation of symbol * Surf.ty_expr
+| UnusedAnnotation of symbol
 | MalformedTypeClassKind of HM.t
+| InvalidNamespaceType of HM.t
 exception InferError of pos * Signal
