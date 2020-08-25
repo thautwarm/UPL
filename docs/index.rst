@@ -1,6 +1,8 @@
 Programming Language U
 =========================
 
+*The page is under construction*
+
 Aiming at expressing all programming abstractions in one language.
 
 .. raw:: html

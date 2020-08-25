@@ -10,3 +10,4 @@ dexe_smlfs/publish/
 build/
 dist/
 examples/out-*/
+sphinx-docs/
