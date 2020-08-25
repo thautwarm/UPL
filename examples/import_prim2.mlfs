@@ -13,10 +13,10 @@ let c = a.push 1
 
 check c as aa
 
-val mk2 : forall a. a -> (a, a)
-let mk2 = fun x -> (x, x)
+val mk2' : forall a. a -> ? _ as what_is_omitted
+let mk2' = fun x -> (x, x)
 
-let _ = println (? (mk2 a) as mk2a)
+let _ = println (? (mk2' a) as mk2a)
 
 val index : forall a. Vec a -> i64 -> a
 let index = extern "(x::Vector) -> (i::Int64) -> x[i]"

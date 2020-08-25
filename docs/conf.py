@@ -81,7 +81,7 @@ html_theme_options = {
     # Currently, the supported themes are:
     # - Bootstrap 2: https://bootswatch.com/2
     # - Bootstrap 3: https://bootswatch.com/3
-    "bootswatch_theme": "Readable",
+    "bootswatch_theme": "readable",
     # Choose Bootstrap version.
     # Values: "3" (default) or "2" (in quotes)
     "bootstrap_version": "3",
@@ -97,8 +97,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 
 html_static_path = ["static"]
-
-html_favicon = "./favicon.ico"
+# html_favicon = "./favicon.ico"
 
 
 # Custom sidebar templates, must be a dictionary that maps document names
