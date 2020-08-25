@@ -58,6 +58,7 @@
       aria-labelledby="dLabelGlobalToc"><ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Core Language of U</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#preview">Preview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#types">Types</a></li>
 </ul>
 </li>
 </ul>
@@ -75,6 +76,7 @@
       aria-labelledby="dLabelLocalToc"><ul>
 <li><a class="reference internal" href="#">Core Language of U</a><ul>
 <li><a class="reference internal" href="#preview">Preview</a></li>
+<li><a class="reference internal" href="#types">Types</a></li>
 </ul>
 </li>
 </ul>
@@ -140,6 +142,9 @@ hence contributes to the readability.</p>
 <span class="k">let</span> <span class="nv">int_add</span> <span class="o">=</span> <span class="k">extern</span> <span class="s">&quot;x =&gt; y =&gt; x + y&quot;</span>
 
 <span class="k">let</span> <span class="nv">add_integers</span> <span class="o">=</span> <span class="n">int_add</span> <span class="n">int_var</span> <span class="mi">2</span>
+
+<span class="k">val</span> <span class="n">make_pair</span> <span class="o">:</span> <span class="n">forall</span> <span class="n">a</span><span class="o">.</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="o">(</span><span class="n">a</span><span class="o">,</span> <span class="n">a</span><span class="o">)</span>
+<span class="k">let</span> <span class="nv">make_pair</span> <span class="o">=</span> <span class="k">fun</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="o">(</span><span class="n">a</span><span class="o">,</span> <span class="n">a</span><span class="o">)</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">val</span></code> keyword is for declaring variables.</p>
@@ -155,6 +160,20 @@ into our static type checker.</p>
 </div>
 <p>Still it is not an actual multi-ary function in the backend(JavaScript).</p>
 <p>Function calls/applications in this syntax frontend does not need parentheses.</p>
+<p>A type like <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">...)</span></code> is a tuple type, and values like <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">...)</span></code> are tuple values.</p>
+<p>The concept of tuple is similar to the anonymous structure type in C. You can create a tuple to hold heterogenous data without some specific datatype predefined.</p>
+<p><code class="docutils literal notranslate"><span class="pre">fun</span> <span class="pre">arg</span> <span class="pre">-&gt;</span> <span class="pre">return</span></code> is a function value, it doesn’t need a name, and maps <code class="docutils literal notranslate"><span class="pre">arg</span></code> to <code class="docutils literal notranslate"><span class="pre">return</span></code>.</p>
+</div>
+<div class="section" id="types">
+<h2>Types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>function types : <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">-&gt;</span> <span class="pre">a</span></code></p></li>
+<li><p>tuple type: <code class="docutils literal notranslate"><span class="pre">(),</span> <span class="pre">(a,</span> <span class="pre">b),</span> <span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code></p></li>
+<li><p><em>named type</em>: <code class="docutils literal notranslate"><span class="pre">i32</span></code>, <code class="docutils literal notranslate"><span class="pre">i64</span></code>, <code class="docutils literal notranslate"><span class="pre">str</span></code>. Note that the types are not keywords, they’re type bindings in current <strong>scope</strong>.</p></li>
+<li><p>polymorphic type: <code class="docutils literal notranslate"><span class="pre">forall</span> <span class="pre">a.</span> <span class="pre">a</span> <span class="pre">-&gt;</span> <span class="pre">a</span></code>, we read it as “for any type <code class="docutils literal notranslate"><span class="pre">a</span></code>, map <code class="docutils literal notranslate"><span class="pre">a</span></code> to <code class="docutils literal notranslate"><span class="pre">a</span></code>”.</p></li>
+<li><p>implicit type: <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">t</span> <span class="pre">}</span></code>. We don’t talk about it at here.</p></li>
+</ul>
+<p>Under construction.</p>
 </div>
 </div>
 

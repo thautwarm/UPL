@@ -30,6 +30,9 @@ val int_add : i64 -> i64 -> i64
 let int_add = extern "x => y => x + y"
 
 let add_integers = int_add int_var 2
+
+val make_pair : forall a. a -> (a, a)
+let make_pair = fun a -> (a, a)
 ```
 
 `val` keyword is for declaring variables.
@@ -52,3 +55,20 @@ let int_add' = "([x, y]) => x + y)"
 Still it is not an actual multi-ary function in the backend(JavaScript).
 
 Function calls/applications in this syntax frontend does not need parentheses.
+
+A type like `(a, b, ...)` is a tuple type, and values like `(a, b, ...)` are tuple values.
+
+The concept of tuple is similar to the anonymous structure type in C. You can create a tuple to hold heterogenous data without some specific datatype predefined.
+
+`fun arg -> return` is a function value, it doesn't need a name, and maps `arg` to `return`.
+
+## Types
+
+
+- function types : `a -> a`
+- tuple type: `(), (a, b), (a, b, c)`
+- *named type*: `i32`, `i64`, `str`. Note that the types are not keywords, they're type bindings in current **scope**.
+- polymorphic type: `forall a. a -> a`, we read it as "for any type `a`, map `a` to `a`".
+- implicit type: `{ t }`. We don't talk about it at here.
+
+Under construction.
