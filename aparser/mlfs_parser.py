@@ -2907,7 +2907,7 @@ def mk_parser():
                 lcl_2 = (False, lcl_2)
                 lcl_1 = lcl_2
             else:
-                lcl_2 = rbnf_named_parse_type(builtin_state, builtin_tokens)
+                lcl_2 = rbnf_named_parse_toptype(builtin_state, builtin_tokens)
                 rbnf_named__check_2 = lcl_2
                 lcl_2 = rbnf_named__check_2[0]
                 lcl_2 = (lcl_2 == False)
@@ -3813,7 +3813,7 @@ def mk_parser():
             else:
                 lcl_2 = rbnf_named__check_1[1]
                 rbnf_tmp_1 = lcl_2
-                lcl_2 = rbnf_named_parse_type(builtin_state, builtin_tokens)
+                lcl_2 = rbnf_named_parse_toptype(builtin_state, builtin_tokens)
                 rbnf_named__check_2 = lcl_2
                 lcl_2 = rbnf_named__check_2[0]
                 lcl_2 = (lcl_2 == False)
@@ -3840,7 +3840,7 @@ def mk_parser():
                         lcl_4 = (False, lcl_4)
                         lcl_3 = lcl_4
                     else:
-                        lcl_4 = rbnf_named_parse_type(builtin_state, builtin_tokens)
+                        lcl_4 = rbnf_named_parse_toptype(builtin_state, builtin_tokens)
                         rbnf_named__check_4 = lcl_4
                         lcl_4 = rbnf_named__check_4[0]
                         lcl_4 = (lcl_4 == False)

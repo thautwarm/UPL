@@ -1,25 +1,31 @@
 module Functor
 
-val Functor : Type @Functor
-let Functor = Functor
+// a runtime specific primitive
+val op_Element : u64 -> forall a b. a -> b
+let op_Element = extern ""
 
-val List : Type @List
-let List = List
 
-val Maybe : Type @Maybe
-let Maybe = Maybe
+type Functor F = (fmap : forall a b. (a -> b) -> F a -> F b)
+
 
 val fmap : forall f. {Functor f} -> forall a b. (a -> b) -> f a -> f b
-let fmap = extern ""
+let fmap = fun functor -> fun map -> fun data -> functor.fmap map data
 
+
+// dummy types
+val List : Type @List
+let List = extern ""
+
+// list instance
 val listFunctor : {Functor List}
 let listFunctor = extern ""
 
+// list value
 val lst : List i64
 let lst = extern ""
 
 let mapped = fmap (fun x -> "1") lst
-check mapped as mapped
 
-val f : (forall a. a -> a) -> (i64, str)
-let f = fun f -> (f 1, f "2")
+check mapped as mapped
+// => mapped : |"List"|Functor|p| str
+

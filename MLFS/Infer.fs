@@ -27,7 +27,7 @@ let rec infer_t : global_st -> local_st -> Surf.ty_expr -> t =
     match
         match ty_expr with
         | Surf.TNew tn ->
-            gensym global_st (sprintf "%A" tn)
+            gensym global_st tn
             |> TNom |> T
         | Surf.TImplicit ty_expr ->
             T(TImplicit <| infer_t global_st local_st ty_expr)

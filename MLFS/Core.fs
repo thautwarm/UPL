@@ -112,7 +112,7 @@ let gensym (g: global_st) (major : string) =
     i <- i / 26
   done;
   // System.String.Concat : char iterable -> string
-  sprintf "|%s|%s|%s|" major g.current_module_name (System.String.Concat chars)
+  sprintf "|%s|%s.%s." (System.String.Concat chars) g.current_module_name major
 
 
 let (|MustBeNom|) t =
