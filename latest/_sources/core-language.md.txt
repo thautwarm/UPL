@@ -46,7 +46,7 @@ Multiple arguments might be more familiar with people from Java or Python:
 
 ```F#
 val int_add': (i64, i64) -> i64
-let int_add' = "([x, y]) => x + y)
+let int_add' = "([x, y]) => x + y)"
 ```
 
 Still it is not an actual multi-ary function in the backend(JavaScript).
