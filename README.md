@@ -15,7 +15,7 @@ bash test.sh
 
 Check out `test.sh` for how to invoke the command line compiler.
 
-Check out `/examples` directory for some valid example programs.
+Check out `examples/` directory for some valid example programs.
 
 ## Some Examples
 
