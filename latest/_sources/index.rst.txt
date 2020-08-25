@@ -26,6 +26,7 @@ Features(gray section means the feature is WIP):
 5. Type driven development via type holes and wildcard types
 6. Agnostic code generation targets
 7. :wip:`Type-safe and scope-safe meta-programming and staging programming`
+8. Separate compilation system
 
 Besides, U shall be efficient in coding and execution.
 
