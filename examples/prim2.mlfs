@@ -1,0 +1,23 @@
+module Prim
+
+val op_Element : u64 -> forall a b. a -> b
+let op_Element = extern "u -> x -> x[u]"
+val op_Make : forall sub maker. {Make (sub, maker)} -> Type sub -> maker
+let op_Make = fun f -> fun _ -> coerce f
+
+val unit : Type ()
+
+val Vec : Type @Vec
+let Vec = Vec
+
+let make = op_Make
+
+
+val vecIsMakeable : { Make (Vec, forall a. () -> Vec a) }
+let vecIsMakeable = extern "..."
+
+val pushVec : {forall a. field (Vec a, "push", a -> unit)}
+let pushVec = extern "x -> function (a) push!(x, a); () end"
+
+val println : forall a. a -> unit
+let println = extern "function (x) println(x); () end"

@@ -15,7 +15,7 @@ def mlfsc(*vargs, name="main", sigs="", o="./"):
             mlfsf(src_file, f)
             src_files[i] = f
 
-    sig_files = list(map(dumps, filter(lambda x: x, sigs.split(";"))))
+    sig_files = list(filter(lambda x: x, sigs.split(";")))
 
     json = dict(
         sig_files=sig_files,

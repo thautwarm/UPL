@@ -15,6 +15,7 @@ type ty_expr =
 
 type decl =
 | DAnn of symbol * ty_expr
+| DAnnHMT of symbol * HM.t
 | DOpen of expr
 | DLoc of pos
 | DBind of symbol * expr

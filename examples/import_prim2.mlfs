@@ -1,0 +1,37 @@
+module main
+import Prim
+open Prim
+
+let _ = (? (println) as pr) 1
+let _ = println i64
+
+let a = make Vec ()
+
+check a as a_type
+
+let c = a.push 1
+
+check c as aa
+
+val mk2 : forall a. a -> (a, a)
+let mk2 = fun x -> (x, x)
+
+let _ = println (? (mk2 a) as mk2a)
+
+val index : forall a. Vec a -> i64 -> a
+let index = extern "(x::Vector) -> (i::Int64) -> x[i]"
+
+val CanAdd1 : Type @CanAdd1
+let CanAdd1 = CanAdd1
+
+
+val int_add1 : { Type CanAdd1 -> i64 -> i64 }
+let int_add1 = extern "_ -> (x::Int64) -> x + 1"
+
+val float_add1 : { Type CanAdd1 -> i64 -> i64 }
+let float_add1 = extern "_ -> (x::Float64) -> x + 1.0"
+
+val vec_head_add1 : forall a. { Type CanAdd1 -> a -> a } -> Vec a -> a
+let vec_head_add1 = fun instance ->
+    fun x -> instance CanAdd1 (index x 1)
+

@@ -173,8 +173,7 @@ let load_module :
             (IR.EVal <| I16 0s)
             true
 
-    g.global_implicits_deltas.[field_class] <- namespace_inst_cnt + 1
-
+    g.global_implicits_deltas.[namespace_class] <- namespace_inst_cnt + 1
     let results = mk_post_infer g pos (List.ofSeq results)
     Assign(module_gensym module_name, module_type, untyped_expr <| IR.EVal (I16 0s))::results
 
@@ -192,7 +191,7 @@ let load_sigs : path list -> symbol dset -> global_st -> unit =
             ; implicits = implicits
             } = Json.deserialize<library_signature> src_code
         let reloadedModules = DSet.intersect loaded_modules module_names
-        if DSet.isEmpty reloadedModules then
+        if not <| DSet.isEmpty reloadedModules then
             raise_conflict_names reloadedModules
         let _ = DSet.update loaded_modules module_names
         for (t_head, insts) in implicits do

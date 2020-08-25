@@ -122,7 +122,7 @@ def mk_type_def(type_head, definition):
     record_type = TVar(type_name)
 
     for each in bounds:
-      record_type = TApp(record_type, TBound(each))
+      record_type = TApp(record_type, TVar(each))
 
 
     field_class = TVar("field")
@@ -648,50 +648,6 @@ def mk_parser():
         return lcl_0
 
     def rbnf_named_lr_step_rbnfmacro_4(rbnf_tmp_0, builtin_state, builtin_tokens):
-        lcl_0 = rbnf_named_parse_tvar(builtin_state, builtin_tokens)
-        rbnf_named__check_1 = lcl_0
-        lcl_0 = rbnf_named__check_1[0]
-        lcl_0 = (lcl_0 == False)
-        if lcl_0:
-            lcl_0 = rbnf_named__check_1
-        else:
-            lcl_1 = rbnf_named__check_1[1]
-            rbnf_tmp_1 = lcl_1
-            lcl_1 = rbnf_tmp_0.append
-            lcl_1 = lcl_1(rbnf_tmp_1)
-            rbnf_tmp_1_ = rbnf_tmp_0
-            lcl_2 = (True, rbnf_tmp_1_)
-            lcl_0 = lcl_2
-        return lcl_0
-
-    def rbnf_named_lr_loop_rbnfmacro_4(rbnf_tmp_0, builtin_state, builtin_tokens):
-        rbnf_named_lr_rbnfmacro_4_reduce = rbnf_tmp_0
-        lcl_0 = builtin_tokens.offset
-        rbnf_named__off_0 = lcl_0
-        lcl_0 = rbnf_named_lr_step_rbnfmacro_4(rbnf_named_lr_rbnfmacro_4_reduce, builtin_state, builtin_tokens)
-        rbnf_named_lr_rbnfmacro_4_try = lcl_0
-        lcl_0 = rbnf_named_lr_rbnfmacro_4_try[0]
-        lcl_0 = (lcl_0 is not False)
-        while lcl_0:
-            lcl_1 = builtin_tokens.offset
-            rbnf_named__off_0 = lcl_1
-            lcl_1 = rbnf_named_lr_rbnfmacro_4_try[1]
-            rbnf_named_lr_rbnfmacro_4_reduce = lcl_1
-            lcl_1 = rbnf_named_lr_step_rbnfmacro_4(rbnf_named_lr_rbnfmacro_4_reduce, builtin_state, builtin_tokens)
-            rbnf_named_lr_rbnfmacro_4_try = lcl_1
-            lcl_1 = rbnf_named_lr_rbnfmacro_4_try[0]
-            lcl_1 = (lcl_1 is not False)
-            lcl_0 = lcl_1
-        lcl_0 = builtin_tokens.offset
-        lcl_0 = (lcl_0 == rbnf_named__off_0)
-        if lcl_0:
-            lcl_1 = (True, rbnf_named_lr_rbnfmacro_4_reduce)
-            lcl_0 = lcl_1
-        else:
-            lcl_0 = rbnf_named_lr_rbnfmacro_4_try
-        return lcl_0
-
-    def rbnf_named_lr_step_rbnfmacro_5(rbnf_tmp_0, builtin_state, builtin_tokens):
         try:
             _rbnf_cur_token = builtin_tokens.array[builtin_tokens.offset]
             if (_rbnf_cur_token.idint is 11):
@@ -727,34 +683,34 @@ def mk_parser():
             lcl_0 = lcl_1
         return lcl_0
 
-    def rbnf_named_lr_loop_rbnfmacro_5(rbnf_tmp_0, builtin_state, builtin_tokens):
-        rbnf_named_lr_rbnfmacro_5_reduce = rbnf_tmp_0
+    def rbnf_named_lr_loop_rbnfmacro_4(rbnf_tmp_0, builtin_state, builtin_tokens):
+        rbnf_named_lr_rbnfmacro_4_reduce = rbnf_tmp_0
         lcl_0 = builtin_tokens.offset
         rbnf_named__off_0 = lcl_0
-        lcl_0 = rbnf_named_lr_step_rbnfmacro_5(rbnf_named_lr_rbnfmacro_5_reduce, builtin_state, builtin_tokens)
-        rbnf_named_lr_rbnfmacro_5_try = lcl_0
-        lcl_0 = rbnf_named_lr_rbnfmacro_5_try[0]
+        lcl_0 = rbnf_named_lr_step_rbnfmacro_4(rbnf_named_lr_rbnfmacro_4_reduce, builtin_state, builtin_tokens)
+        rbnf_named_lr_rbnfmacro_4_try = lcl_0
+        lcl_0 = rbnf_named_lr_rbnfmacro_4_try[0]
         lcl_0 = (lcl_0 is not False)
         while lcl_0:
             lcl_1 = builtin_tokens.offset
             rbnf_named__off_0 = lcl_1
-            lcl_1 = rbnf_named_lr_rbnfmacro_5_try[1]
-            rbnf_named_lr_rbnfmacro_5_reduce = lcl_1
-            lcl_1 = rbnf_named_lr_step_rbnfmacro_5(rbnf_named_lr_rbnfmacro_5_reduce, builtin_state, builtin_tokens)
-            rbnf_named_lr_rbnfmacro_5_try = lcl_1
-            lcl_1 = rbnf_named_lr_rbnfmacro_5_try[0]
+            lcl_1 = rbnf_named_lr_rbnfmacro_4_try[1]
+            rbnf_named_lr_rbnfmacro_4_reduce = lcl_1
+            lcl_1 = rbnf_named_lr_step_rbnfmacro_4(rbnf_named_lr_rbnfmacro_4_reduce, builtin_state, builtin_tokens)
+            rbnf_named_lr_rbnfmacro_4_try = lcl_1
+            lcl_1 = rbnf_named_lr_rbnfmacro_4_try[0]
             lcl_1 = (lcl_1 is not False)
             lcl_0 = lcl_1
         lcl_0 = builtin_tokens.offset
         lcl_0 = (lcl_0 == rbnf_named__off_0)
         if lcl_0:
-            lcl_1 = (True, rbnf_named_lr_rbnfmacro_5_reduce)
+            lcl_1 = (True, rbnf_named_lr_rbnfmacro_4_reduce)
             lcl_0 = lcl_1
         else:
-            lcl_0 = rbnf_named_lr_rbnfmacro_5_try
+            lcl_0 = rbnf_named_lr_rbnfmacro_4_try
         return lcl_0
 
-    def rbnf_named_lr_step_rbnfmacro_7(rbnf_tmp_0, builtin_state, builtin_tokens):
+    def rbnf_named_lr_step_rbnfmacro_6(rbnf_tmp_0, builtin_state, builtin_tokens):
         try:
             _rbnf_cur_token = builtin_tokens.array[builtin_tokens.offset]
             if (_rbnf_cur_token.idint is 11):
@@ -790,31 +746,31 @@ def mk_parser():
             lcl_0 = lcl_1
         return lcl_0
 
-    def rbnf_named_lr_loop_rbnfmacro_7(rbnf_tmp_0, builtin_state, builtin_tokens):
-        rbnf_named_lr_rbnfmacro_7_reduce = rbnf_tmp_0
+    def rbnf_named_lr_loop_rbnfmacro_6(rbnf_tmp_0, builtin_state, builtin_tokens):
+        rbnf_named_lr_rbnfmacro_6_reduce = rbnf_tmp_0
         lcl_0 = builtin_tokens.offset
         rbnf_named__off_0 = lcl_0
-        lcl_0 = rbnf_named_lr_step_rbnfmacro_7(rbnf_named_lr_rbnfmacro_7_reduce, builtin_state, builtin_tokens)
-        rbnf_named_lr_rbnfmacro_7_try = lcl_0
-        lcl_0 = rbnf_named_lr_rbnfmacro_7_try[0]
+        lcl_0 = rbnf_named_lr_step_rbnfmacro_6(rbnf_named_lr_rbnfmacro_6_reduce, builtin_state, builtin_tokens)
+        rbnf_named_lr_rbnfmacro_6_try = lcl_0
+        lcl_0 = rbnf_named_lr_rbnfmacro_6_try[0]
         lcl_0 = (lcl_0 is not False)
         while lcl_0:
             lcl_1 = builtin_tokens.offset
             rbnf_named__off_0 = lcl_1
-            lcl_1 = rbnf_named_lr_rbnfmacro_7_try[1]
-            rbnf_named_lr_rbnfmacro_7_reduce = lcl_1
-            lcl_1 = rbnf_named_lr_step_rbnfmacro_7(rbnf_named_lr_rbnfmacro_7_reduce, builtin_state, builtin_tokens)
-            rbnf_named_lr_rbnfmacro_7_try = lcl_1
-            lcl_1 = rbnf_named_lr_rbnfmacro_7_try[0]
+            lcl_1 = rbnf_named_lr_rbnfmacro_6_try[1]
+            rbnf_named_lr_rbnfmacro_6_reduce = lcl_1
+            lcl_1 = rbnf_named_lr_step_rbnfmacro_6(rbnf_named_lr_rbnfmacro_6_reduce, builtin_state, builtin_tokens)
+            rbnf_named_lr_rbnfmacro_6_try = lcl_1
+            lcl_1 = rbnf_named_lr_rbnfmacro_6_try[0]
             lcl_1 = (lcl_1 is not False)
             lcl_0 = lcl_1
         lcl_0 = builtin_tokens.offset
         lcl_0 = (lcl_0 == rbnf_named__off_0)
         if lcl_0:
-            lcl_1 = (True, rbnf_named_lr_rbnfmacro_7_reduce)
+            lcl_1 = (True, rbnf_named_lr_rbnfmacro_6_reduce)
             lcl_0 = lcl_1
         else:
-            lcl_0 = rbnf_named_lr_rbnfmacro_7_try
+            lcl_0 = rbnf_named_lr_rbnfmacro_6_try
         return lcl_0
 
     def rbnf_named_parse_START(builtin_state, builtin_tokens):
@@ -1069,7 +1025,7 @@ def mk_parser():
                     lcl_5 = builtin_tokens.array[(builtin_tokens.offset + 0)]
                     lcl_5 = lcl_5.idint
                     if (lcl_5 == 14):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1103,7 +1059,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 19):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1137,7 +1093,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 24):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1171,7 +1127,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 34):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1205,7 +1161,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 23):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1239,7 +1195,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 20):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1273,7 +1229,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 25):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1307,7 +1263,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 29):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1341,7 +1297,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 35):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1375,7 +1331,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 31):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1409,7 +1365,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 30):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1443,7 +1399,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 22):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1477,7 +1433,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 16):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1524,7 +1480,7 @@ def mk_parser():
                         lcl_6 = rbnf_named_lr_loop_atom(rbnf_tmp_1_, builtin_state, builtin_tokens)
                         lcl_4 = lcl_6
                     elif (lcl_5 == 9):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1558,7 +1514,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 5):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1592,7 +1548,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 32):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -1626,7 +1582,7 @@ def mk_parser():
                             lcl_6 = lcl_7
                         lcl_4 = lcl_6
                     elif (lcl_5 == 33):
-                        lcl_6 = rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens)
+                        lcl_6 = rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens)
                         rbnf_named__check_1 = lcl_6
                         lcl_6 = rbnf_named__check_1[0]
                         lcl_6 = (lcl_6 == False)
@@ -2797,7 +2753,7 @@ def mk_parser():
         return lcl_0
 
     def rbnf_named_parse_rbnfmacro_4(builtin_state, builtin_tokens):
-        lcl_0 = rbnf_named_parse_tvar(builtin_state, builtin_tokens)
+        lcl_0 = rbnf_named_parse_record_field_def(builtin_state, builtin_tokens)
         rbnf_named__check_0 = lcl_0
         lcl_0 = rbnf_named__check_0[0]
         lcl_0 = (lcl_0 == False)
@@ -2815,26 +2771,7 @@ def mk_parser():
             lcl_0 = lcl_1
         return lcl_0
 
-    def rbnf_named_parse_rbnfmacro_5(builtin_state, builtin_tokens):
-        lcl_0 = rbnf_named_parse_record_field_def(builtin_state, builtin_tokens)
-        rbnf_named__check_0 = lcl_0
-        lcl_0 = rbnf_named__check_0[0]
-        lcl_0 = (lcl_0 == False)
-        if lcl_0:
-            lcl_0 = rbnf_named__check_0
-        else:
-            lcl_1 = rbnf_named__check_0[1]
-            rbnf_tmp_0 = lcl_1
-            lcl_1 = []
-            _rbnf_immediate_lst = lcl_1
-            _rbnf_immediate_lst.append(rbnf_tmp_0)
-            lcl_1 = _rbnf_immediate_lst
-            rbnf_tmp_1_ = lcl_1
-            lcl_1 = rbnf_named_lr_loop_rbnfmacro_5(rbnf_tmp_1_, builtin_state, builtin_tokens)
-            lcl_0 = lcl_1
-        return lcl_0
-
-    def rbnf_named_parse_rbnfmacro_7(builtin_state, builtin_tokens):
+    def rbnf_named_parse_rbnfmacro_6(builtin_state, builtin_tokens):
         lcl_0 = rbnf_named_parse_expr(builtin_state, builtin_tokens)
         rbnf_named__check_0 = lcl_0
         lcl_0 = rbnf_named__check_0[0]
@@ -2849,7 +2786,7 @@ def mk_parser():
             _rbnf_immediate_lst.append(rbnf_tmp_0)
             lcl_1 = _rbnf_immediate_lst
             rbnf_tmp_1_ = lcl_1
-            lcl_1 = rbnf_named_lr_loop_rbnfmacro_7(rbnf_tmp_1_, builtin_state, builtin_tokens)
+            lcl_1 = rbnf_named_lr_loop_rbnfmacro_6(rbnf_tmp_1_, builtin_state, builtin_tokens)
             lcl_0 = lcl_1
         return lcl_0
 
@@ -2895,7 +2832,7 @@ def mk_parser():
                     lcl_4 = (True, rbnf_tmp_1_)
                     lcl_2 = lcl_4
                 elif (lcl_3 == 5):
-                    lcl_4 = rbnf_named_parse_rbnfmacro_5(builtin_state, builtin_tokens)
+                    lcl_4 = rbnf_named_parse_rbnfmacro_4(builtin_state, builtin_tokens)
                     rbnf_named__check_1 = lcl_4
                     lcl_4 = rbnf_named__check_1[0]
                     lcl_4 = (lcl_4 == False)
@@ -3815,7 +3752,7 @@ def mk_parser():
                 lcl_3 = builtin_tokens.array[(builtin_tokens.offset + 0)]
                 lcl_3 = lcl_3.idint
                 if (lcl_3 == 5):
-                    lcl_4 = rbnf_named_parse_rbnfmacro_4(builtin_state, builtin_tokens)
+                    lcl_4 = rbnf_named_parse_rbnfmacro_2(builtin_state, builtin_tokens)
                     rbnf_named__check_1 = lcl_4
                     lcl_4 = rbnf_named__check_1[0]
                     lcl_4 = (lcl_4 == False)

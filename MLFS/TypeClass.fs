@@ -13,7 +13,7 @@ let rec inst_resolve : global_st -> inst_resolv_ctx -> HM.t -> pos -> IR.expr
     in
     let target = prune target in
     let candidates = darray() in
-    let resolve_on_seq (xs : evidence_instance seq) =
+    let resolve_on_seq (xs : evidence_instance seq, allow_shadow: bool) =
         let _ =
             for inst in xs do
                 // (if not <| inst.isPruned
@@ -31,7 +31,8 @@ let rec inst_resolve : global_st -> inst_resolv_ctx -> HM.t -> pos -> IR.expr
         if DArray.isEmpty candidates
         then None
         else
-        if DArray.len candidates = 1
+        if allow_shadow
+           || DArray.len candidates = 1
         then
             let inst, evidences = candidates.[0]
             // this unification leverages type class to
@@ -52,14 +53,14 @@ let rec inst_resolve : global_st -> inst_resolv_ctx -> HM.t -> pos -> IR.expr
                     [|for (a, _) in candidates -> a|]
                 ))
 
-    match resolve_on_seq local_implicits with
+    match resolve_on_seq (local_implicits, true) with
     | Some inst -> inst
     | None ->
     let t_head = Core.get_type_head target in
     let global_implicits = Dict.getForce global_st.global_implicits t_head <| fun _ ->
         darray()
     in
-    match resolve_on_seq global_implicits with
+    match resolve_on_seq (global_implicits, false) with
     | Some inst -> inst
     | None ->
         raise <| InferError(pos, InstanceNotFound target)

@@ -43,7 +43,7 @@ module DArray =
     let isEmpty (this: 'a darray) = this.Count = 0
 
     let last_n (this: _ darray) n =
-        if n < 0 then
+        if n <= 0 then
             darray()
         else
         let len = len this in
@@ -59,8 +59,9 @@ let constant x = fun _ -> x
 module Dict =
     let pop (this: ('k, 'v) dict) (k: 'k) =
         if this.ContainsKey k then
+            let r = this.[k]
             ignore(this.Remove k)
-            Some <| this.[k]
+            Some r
         else
             None
     let ofList (xs: ('k * 'v) list) =

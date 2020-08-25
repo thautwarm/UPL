@@ -1,0 +1,15 @@
+module Record
+
+val tupleFirst : { forall a b. field ((a, b), "first", a) }
+let tupleFirst = extern "function (x) @inbounds x[1] end"
+
+val unit : Type @unit
+let unit = unit
+
+val println : forall a. a -> unit
+let println = extern "println"
+
+let _ = println (1, "3").first
+let _ = println ((1, "3"), 2).first
+let _ = println (1, "3").first
+let _ = println ((1.0, 2.0), 4.0).first

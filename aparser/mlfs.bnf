@@ -92,7 +92,7 @@ def mk_type_def(type_head, definition):
     record_type = TVar(type_name)
 
     for each in bounds:
-      record_type = TApp(record_type, TBound(each))
+      record_type = TApp(record_type, TVar(each))
 
 
     field_class = TVar("field")
@@ -224,7 +224,7 @@ type : tvar { $1 }
      ;
 
 
-type_head :  <name> list[tvar] { (Pos($1), $1.value, $2) }
+type_head :  <name> list[nameStr] { (Pos($1), $1.value, $2) }
           |  <name> { (Pos($1), $1.value, []) }
           ;
 

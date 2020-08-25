@@ -139,5 +139,5 @@ let predef =
 let show_hints (g: global_st) =
   let prune = g.tcstate.prune
   for (k, v) in g.queries do
-    printf "%A : %A" k <| prune v
+    printfn "%s : %O" k <| prune v
   done

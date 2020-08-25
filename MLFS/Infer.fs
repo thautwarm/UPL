@@ -88,6 +88,12 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
         function
         | [] -> List.rev rev_decls, local_st
         | hd::tl ->
+        let (|DAnn'|_|) x =
+            match x with
+            | Surf.DAnn(n, ty_expr) -> Some <| DAnn'(false, n, infer_t global_st local_st ty_expr)
+            | Surf.DAnnHMT(n, ty) -> Some <| DAnn'(true, n, ty)
+            | _ -> None
+
         match hd with
         | Surf.DQuery(label, user_sym) ->
             match Map.tryFind user_sym local_st.type_env with
@@ -98,46 +104,6 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
                 recurse (rev_decls, local_st) tl
         | Surf.DLoc pos ->
             recurse (rev_decls, {local_st with pos = pos}) tl
-        | Surf.DAnn(user_sym, ty_expr) ->
-            match Dict.tryFind annotated user_sym with
-            | Some _ ->
-                raise
-                <| InferError(local_st.pos, UnusedAnnotation user_sym)
-            | None ->
-            let symgen = gensym global_st user_sym
-            let ann_ty = infer_t global_st local_st ty_expr
-            let mutable local_st =
-                { local_st
-                   with symmap = Map.add user_sym symgen local_st.symmap
-                        type_env = Map.add user_sym ann_ty local_st.type_env }
-            let scoped_type_variables =
-                match ann_ty with
-                | TForall(ns, _) -> ns
-                | TImplicit im when is_global ->
-                    let im = prune im
-                    match im with
-                    | TVar _ | TBound _ ->
-                        raise <| InferError(local_st.pos, MalformedTypeClassKind im)
-                    | _ ->
-                    let class_head = get_type_head im
-                    let global_implicits =
-                        Dict.getForce global_st.global_implicits class_head <| fun _ ->
-                            darray()
-                    let _ =
-                        DArray.push global_implicits <|
-                        IR.evidence im local_st.pos (IR.EVar symgen) false
-                    let _ =
-                        global_st.global_implicits_deltas.[class_head] <-
-                        1 + Dict.getForce global_st.global_implicits_deltas class_head (fun _ -> 0)
-                    []
-                | TImplicit im ->
-                   let inst = IR.evidence im local_st.pos (IR.EVar symgen) false in
-                   let _ = local_st <- {local_st with local_implicits = inst::local_st.local_implicits }
-                   []
-                | _ -> []
-
-            annotated.[user_sym] <- scoped_type_variables;
-            recurse (rev_decls, local_st) tl
         | Surf.DBind("_", expr) ->
             let topdown_check = infer_expr global_st local_st expr
             let lazy_decl =
@@ -146,7 +112,7 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
             recurse (rev_decls, local_st) tl
         | Surf.DBind(user_sym, expr) ->
             let symgen, ann_ty, scoped_type_variables, local_st =
-                match Dict.tryFind annotated user_sym with
+                match Dict.pop annotated user_sym with
                 | Some scoped_type_variables ->
                     local_st.symmap.[user_sym]
                     , prune (local_st.type_env.[user_sym])
@@ -200,8 +166,8 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
                 | TTup xs ->
                     let rec recurse res = function
                         | [] -> ValidNamespace res
-                        | TNom n::tl ->
-                            recurse (n::res) tl
+                        | TTup [TNom n; t]::tl ->
+                            recurse ((n, t)::res) tl
                         | _ -> InvalidNamespace x
                     in recurse [] xs
                 | _ -> InvalidNamespace x
@@ -221,11 +187,52 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
             let rev_decls =
                     lazy IR.Assign(sym_gen, module'.typ, module') :: rev_decls
             let tl =
-                [ for f in fieldnames
-                -> Surf.DBind(f, Surf.EField(Surf.EVar user_sym_gen, f))
+                [ for (f, t) in fieldnames do
+                    yield Surf.DAnnHMT(f, t)
+                    yield Surf.DBind(f, Surf.EField(Surf.EVar user_sym_gen, f))
                 ]
                 @ tl
             in recurse (rev_decls, local_st) tl
+        | DAnn'(type_evaluated, user_sym, ann_ty) ->
+            match Dict.tryFind annotated user_sym with
+            | Some _ ->
+                raise
+                <| InferError(local_st.pos, UnusedAnnotation user_sym)
+            | None ->
+            let symgen = gensym global_st user_sym
+            let mutable local_st =
+                { local_st
+                   with symmap = Map.add user_sym symgen local_st.symmap
+                        type_env = Map.add user_sym ann_ty local_st.type_env }
+            let scoped_type_variables =
+                match ann_ty with
+                | TForall(ns, _) -> ns
+                | TImplicit im when is_global && not type_evaluated ->
+                    let im = prune im
+                    match im with
+                    | TVar _ | TBound _ ->
+                        raise <| InferError(local_st.pos, MalformedTypeClassKind im)
+                    | _ ->
+                    let class_head = get_type_head im
+                    let global_implicits =
+                        Dict.getForce global_st.global_implicits class_head <| fun _ ->
+                            darray()
+                    let _ =
+                        DArray.push global_implicits <|
+                        IR.evidence im local_st.pos (IR.EVar symgen) false
+                    let _ =
+                        global_st.global_implicits_deltas.[class_head] <-
+                        1 + Dict.getForce global_st.global_implicits_deltas class_head (fun _ -> 0)
+                    []
+                | TImplicit im ->
+                   let inst = IR.evidence im local_st.pos (IR.EVar symgen) false in
+                   let _ = local_st <- {local_st with local_implicits = inst::local_st.local_implicits }
+                   []
+                | _ -> []
+
+            annotated.[user_sym] <- scoped_type_variables;
+            recurse (rev_decls, local_st) tl
+        | _ -> failwith "impossible as DAnn/DAnnHMT are covered by DAnn' "
 
     in recurse ([], local_st) decls
 

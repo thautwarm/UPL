@@ -22,7 +22,7 @@ with
     | UnboundTypeVariable s ->
         sprintf "  Unbound type variable %s" s
     | DuplicateInstanceError xs ->
-        sprintf "  Duplicate instances found:\n %s"
+        sprintf "  Duplicate instances found:\n%s"
         <| String.concat "\n" (Array.map (sprintf "  - %O") xs)
     | UnificationFail(lhs, rhs) ->
         sprintf "  Unification failed:\n      %O\n    ~\n      %O" lhs rhs
@@ -33,6 +33,6 @@ with
     | MalformedTypeClassKind t ->
         sprintf "  Malformed type class kind for\n:     %O" t
     | InvalidNamespaceType t ->
-        sprintf "  Invalid namespace type\n:     %O" t
+        sprintf "  Invalid namespace type:\n     %O" t
 
 exception InferError of pos * Signal
