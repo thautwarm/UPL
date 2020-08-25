@@ -24,9 +24,9 @@ val choose_id : (forall a. a) -> (i32 -> i32)
 let choose_id =
     // without this intermediate instantiation(choose_id_),
     // MLFS rejects this program
-    // val choose_id_ : (forall a. a -> a) -> (i32 -> i32)
-    // let choose_id_ = choose id
+    val choose_id_ : (forall a. a -> a) -> (i32 -> i32)
+    let choose_id_ = choose id
 
-    // in
-    // choose_id_
-    choose id
+    in
+    choose_id_
+    // choose id

@@ -8,8 +8,31 @@ type Signal =
 | UnboundVariable of symbol
 | UnificationFail of HM.t * HM.t
 | UnsolvedTypeVariables of HM.t
-| UnboundVar of symbol
 | UnusedAnnotation of symbol
 | MalformedTypeClassKind of HM.t
 | InvalidNamespaceType of HM.t
+
+with
+  override this.ToString() =
+    match this with
+    | InstanceNotFound t ->
+        sprintf "  Instance not found for %O" t
+    | UnboundVariable s ->
+        sprintf "  Unbound variable %s" s
+    | UnboundTypeVariable s ->
+        sprintf "  Unbound type variable %s" s
+    | DuplicateInstanceError xs ->
+        sprintf "  Duplicate instances found:\n %s"
+        <| String.concat "\n" (Array.map (sprintf "  - %O") xs)
+    | UnificationFail(lhs, rhs) ->
+        sprintf "  Unification failed:\n      %O\n    ~\n      %O" lhs rhs
+    | UnsolvedTypeVariables t ->
+        sprintf "  Type variables unsolved:\n     %O\n    Try adding explicit annotations." t
+    | UnusedAnnotation s ->
+        sprintf "  Unused type annotations for %s" s
+    | MalformedTypeClassKind t ->
+        sprintf "  Malformed type class kind for\n:     %O" t
+    | InvalidNamespaceType t ->
+        sprintf "  Invalid namespace type\n:     %O" t
+
 exception InferError of pos * Signal

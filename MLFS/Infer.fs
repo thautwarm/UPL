@@ -92,7 +92,7 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
         | Surf.DQuery(label, user_sym) ->
             match Map.tryFind user_sym local_st.type_env with
             | None ->
-                raise <| InferError(local_st.pos, UnboundVar user_sym)
+                raise <| InferError(local_st.pos, UnboundVariable user_sym)
             | Some ty ->
                 DArray.push global_st.queries (label, ty);
                 recurse (rev_decls, local_st) tl
@@ -262,6 +262,11 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
                     IR.apply_implicits impl implicits leaf_type pos local_implicits
             }
     function
+    | Surf.ECoerce expr ->
+        let topdown_check = infer_expr st_global st_local expr
+        { run = fun (_, local_implicits) ->
+            topdown_check.run(NoPropagation, local_implicits)
+        }
     | Surf.EExt external ->
         { run = fun (ti: type_info, local_implicits) ->
             let t = new_tvar()
@@ -354,36 +359,23 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
         { run = fun (ti: type_info, local_implicits) ->
             let ir_sub = topdown_check_subject.run(NoPropagation, local_implicits)
             let ty_sub = ir_sub.typ
-
-            let (|NewPrune|) _ = new_tvar()
-            // if any expected type for 'a.b', we apply the propagation first.
-            // otherwise we use type class to solve the expected type.
-            match map_type_info prune ti with
-            | InstantiateTo (TVar _ as ret_tv)
-            | NoPropagation & NewPrune ret_tv ->
-                let target =
+            let ret_tv, implicits = apply_prop ti <| new_tvar()
+            let target =
                         TApp
                           ( field_class
                           , TTup[ty_sub; TNom fieldname; ret_tv]
                           )
-                let ir_field_accessor =
-                      inst_resolve st_global local_implicits target pos
-                IR.expr pos target <|
-                IR.EApp(ir_field_accessor, ir_sub)
-            | ti ->
-                let ret_tv, implicits = apply_prop ti <| new_tvar()
-                let target =
-                     TApp
-                        ( field_class
-                        , TTup [ty_sub; TNom fieldname; ret_tv])
-                let ir_field_accessor =
-                        inst_resolve st_global local_implicits target pos
-                IR.apply_implicits
-                    (IR.EApp(ir_field_accessor, ir_sub))
-                    implicits
-                    ret_tv
-                    pos
-                    local_implicits
+            let implicit_call =
+                    IR.EApp
+                        ( IR.expr pos top_t (IR.EIm(target, local_implicits))
+                        , ir_sub
+                        )
+            IR.apply_implicits
+                implicit_call
+                implicits
+                ret_tv
+                pos
+                local_implicits
         }
     | Surf.ELet(decls, expr) ->
         let (delay_decls: IR.decl Lazy list, st_local) =
@@ -437,7 +429,7 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
         propagate_for_leaf t ir_val
     | Surf.EVar user_sym ->
         match Map.tryFind user_sym st_local.type_env with
-        | None -> raise <| InferError(pos, UnboundVar user_sym)
+        | None -> raise <| InferError(pos, UnboundVariable user_sym)
         | Some var_t ->
         let var_t = prune var_t
         propagate_for_leaf var_t (IR.EVar user_sym)

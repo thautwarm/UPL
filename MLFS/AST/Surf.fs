@@ -31,6 +31,7 @@ and expr =
 | EField of expr * symbol
 | ETup of expr list
 | EExt of string
+| ECoerce of expr
 | EQuery of string * expr
 
 type module_record =

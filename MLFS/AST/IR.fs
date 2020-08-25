@@ -15,6 +15,9 @@ type evidence
       ; impl : expr_impl
       ; mutable isPruned : bool
       }
+  with override this.ToString() =
+        let {t=t; pos=pos} = this
+        in sprintf "%O %O" t pos
 
 // instance resolution context.
 // it's local context.
@@ -46,7 +49,7 @@ and expr_impl =
 | EFun of symbol * HM.t * expr
 | EApp of expr * expr
 | ETup of expr list
-| EIm of expr * HM.t * evidence_resolv_ctx
+| EIm of HM.t * evidence_resolv_ctx
 
 
 let expr pos typ impl = {pos=pos; typ=typ; impl=impl}
@@ -55,8 +58,10 @@ let apply_implicits : expr_impl -> HM.t darray -> HM.t -> pos -> evidence_resolv
     fun e implicits final_type pos local_implicits ->
     let e = ref e in
     for im in implicits do
-        e := EIm(
-            {pos=pos; typ=HM.top_t; impl= !e}, im, local_implicits);
+        e := EApp
+              ( {pos=pos; typ=HM.top_t; impl= !e}
+              , {pos=pos; typ=HM.top_t; impl= EIm(im, local_implicits)}
+              )
     done;
     {pos = pos; typ = final_type; impl= !e}
 
@@ -95,7 +100,7 @@ let gen_trans_expr_impl : 'ctx transformer -> 'ctx -> expr_impl  -> expr_impl
     | EFun(s, ann, e) -> EFun(s, ann, !e)
     | EApp(f, a) -> EApp(!f, !a)
     | ETup xs -> ETup <| List.map (!) xs
-    | EIm(e, t, insts) -> EIm(!e, t, insts)
+    | EIm _ as e -> e
 
 let gen_trans_expr : 'ctx transformer -> 'ctx -> expr  -> expr
     = fun ({expr_impl=expr_impl_} as self) ctx ->

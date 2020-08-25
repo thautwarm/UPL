@@ -16,10 +16,12 @@ let rec inst_resolve : global_st -> inst_resolv_ctx -> HM.t -> pos -> IR.expr
     let resolve_on_seq (xs : evidence_instance seq) =
         let _ =
             for inst in xs do
-                (if not <| inst.isPruned
-                then inst.t <- prune inst.t
-                     inst.isPruned <- true
-                );
+                // (if not <| inst.isPruned
+                // then inst.t <- prune inst.t
+                //      inst.isPruned <- true
+                // );
+                inst.t <- prune inst.t;
+                // printfn "%O ?<= %O" target inst.t
                 let is_less, evidences = less_than_under_evidences target inst.t
 
                 if is_less

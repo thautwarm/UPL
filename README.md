@@ -8,6 +8,7 @@
 - [x] turing-complete [type classes](https://en.wikipedia.org/wiki/Type_class). see more at see more at [concerns #2](#Implicits)
 - [x] [scoped type variables](https://wiki.haskell.org/Scoped_type_variables).
 - [x] [type holes and wildcard type annotations](https://wiki.haskell.org/GHC/Typed_holes). see more at [concerns #3](#Type-holes).
+- [x] ocaml-like separate compilation
 - [ ] [type-safe staging programming](http://okmij.org/ftp/ML/MetaOCaml.html). see more at [concerns #4](#Type-safe-staging).
 - [ ] object-oriented constructs(virtual tables and virtual methods). see more at [concerns #5](#OOP).
 - [ ] standard library.
@@ -155,3 +156,10 @@ val oop_get_field : forall a field member.{vtable a} -> field (a, field, member)
 
 If some `{ vtable t }` is defined as a constant,
 getting members from an object with type `t` is efficient and needs no hash-table look up in the runtime.
+
+
+## Primitive Operations
+
+Following primitives are expected to defined for each backend:
+
+`op_Element: u64 -> forall a b. a -> b`.

@@ -261,8 +261,15 @@ let less_than_under_evidences : t -> t -> bool * t darray =
   let subst_table = dict()
   let rec subst =
     function
-    | TVar i when Dict.contains subst_table i ->
-      subst_table.[i]
+    | TVar i ->
+      match Dict.tryFind subst_table i with
+      | Some a -> a
+      | None ->
+        let a = small_tc.new_tvar()
+        in subst_table.[i] <- a; a
+
     | root -> generic_transform subst root
   in
-  small_tc.unifyImplicits evidences (subst lhs) (subst rhs), evidences
+  let lhs = subst lhs
+  let rhs = subst rhs
+  small_tc.unifyImplicits evidences lhs rhs, evidences

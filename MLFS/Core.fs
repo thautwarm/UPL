@@ -18,6 +18,7 @@ let general_class = HM.TNom "general_class"
 let namespace_class = HM.TNom "namespace"
 let field_class = HM.TNom "field"
 let module_class = HM.TNom "Module"
+let make_class = HM.TNom "Make"
 
 
 let int_ts =
@@ -123,10 +124,12 @@ let predef =
   Map.ofList
   <| [ for KV(_,  MustBeNom n & t) in float_ts -> n, T t ]
    @ [ for KV(_,  MustBeNom n & t) in int_ts -> n, T t ]
+   @ [ for KV(_,  MustBeNom n & t) in uint_ts -> n, T t ]
    @ [ for MustBeNom n & t in
      [ namespace_class
      ; field_class
      ; module_class
+     ; make_class
      ; type_type
      ; char_t
      ; str_t

@@ -6,6 +6,11 @@ module Common
 // pos, pos', position, *_pos, etc
 *)
 type pos = { line : int; col : int; filename : string}
+    with
+        override this.ToString() =
+          sprintf
+            "at %s, line %d, column %d"
+            this.filename this.line this.col
 
 type symbol = string
 

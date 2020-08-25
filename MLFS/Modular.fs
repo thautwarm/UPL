@@ -49,20 +49,34 @@ let mk_post_infer (g: global_st) =
         ({ expr = expr_
         } as self) pos =
         function
-        | EIm(expr, t, insts) ->
-            let expr = expr_ self pos expr
-            let t = _check_prune pos t
-            IR.EApp(expr, inst_resolve g insts t pos)
+        | EIm(_, _) ->
+            failwith "compiler internal error: implicits not resolved"
         | ETypeVal t ->
             ETypeVal <| _check_prune pos t
         | a -> gen_trans_expr_impl self pos a
 
-    let self =
+    let type_class_resolv
+        ({ expr_impl = expr_impl_} as self)
+        ______
+        ({expr.pos = pos} as expr) =
+          let expr =
+              match expr.impl with
+              | EIm(t, insts) -> {inst_resolve g insts t pos with pos = pos}
+              | _ -> expr
+          in gen_trans_expr self pos expr
+
+    // resolve_type_classes
+    let pass1 =
+        { expr = type_class_resolv
+        ; expr_impl = gen_trans_expr_impl
+        ; decl = gen_trans_decl
+        }
+    let pass2 =
          { expr = post_infer_expr
          ; expr_impl = post_infer_expr_impl
          ; decl = post_infer_decl
          }
-    let main = post_infer_expr_impl self
+    let main ctx impl = pass2.expr_impl pass2 ctx <| pass1.expr_impl pass1 ctx impl
     let post_infer_decls pos decls =
         match
             ELet(decls, expr pos top_t <| IR.EVal(I64 0L))
@@ -122,10 +136,10 @@ let load_module :
     let fields = dict()
 
     for KV(user_sym, ty) in local_tc.type_env do
-        if not <|
-            (Dict.contains fields user_sym
-             && Some ty <> Map.tryFind user_sym predef)
-        then
+        if Dict.contains fields user_sym
+           || (Some ty = Map.tryFind user_sym predef)
+        then ()
+        else
             let ty = prune ty in
             let gen_exp =
                 match ty, Map.tryFind user_sym local_tc.symmap with
@@ -218,7 +232,7 @@ let load_srcs :
     done;
     let prune_evi : evidence -> evidence =
         fun evi ->
-            if not <| evi.isPruned then
+            if evi.isPruned then
                 evi.t <- prune evi.t
                 evi.isPruned <- true
             evi

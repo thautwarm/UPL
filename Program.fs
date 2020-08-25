@@ -27,6 +27,9 @@ let main argv =
     | _ ->
     printfn "invalid json input!"
     1 // return an integer exit code
-    with InferError({line=line; col=col; filename=filename}, a) ->
-     printfn "at %O, line %O, column %O:\n%O" filename line col a
-     reraise()
+    with InferError({line=line; col=col; filename=filename}, a) as e ->
+     printfn "%O, line %O, column %O:\n%O" filename line col a
+     let path = System.IO.Path.GetTempFileName()
+     printfn "Writing stack trace log to %s. You may raise an issue with this file attached." path
+     CamlCompat.writeFile path e.StackTrace
+     1
