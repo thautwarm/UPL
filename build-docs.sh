@@ -9,7 +9,6 @@ git checkout gh-pages
 rm -rf ./$VER/
 rm -rf ./static
 mv -T ./sphinx-docs ./$VER/
-python restatic.py $VER
 # mv -T ./$VER/_static ./$VER/static
 git add -A
 git commit -m "docs update, version $VER"
