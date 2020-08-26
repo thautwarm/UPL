@@ -1,6 +1,6 @@
 module Prim
 
-val op_Element : u64 -> forall a b. a -> b
+val op_Element : forall a b. u64 -> a -> b
 let op_Element = extern "u -> x -> x[u + 1]"
 val op_Make : forall sub maker. {Make (sub, maker)} -> Type sub -> maker
 let op_Make = fun f -> fun _ -> coerce f
