@@ -17,6 +17,8 @@ Check out `test.sh` for how to invoke the command line compiler.
 
 Check out `examples/` directory for some valid example programs.
 
+Check out `julia-lib/*.mlfs` directory for Julia backend status.
+
 ## Some Examples
 
 - functor(example about implicits & type classes)
