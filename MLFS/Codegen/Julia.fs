@@ -142,6 +142,7 @@ and cg_expr_impl isGlobal =
         let f = leftL "(" +^ cg_expr isGlobal f +^ rightL ")"
         (f +^ sepL "(") +>> cg_expr isGlobal arg +^ rightL ")"
     | ETup [] -> wordL "nothing"
+    | ETup [x] -> leftL "(" +^ cg_expr isGlobal x +^ rightL ",)"
     | ETup xs -> tupleL <| List.map (cg_expr isGlobal) xs
     | EIm _ -> failwith "compiler internal error: implicits shall be solved"
 

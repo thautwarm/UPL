@@ -1,0 +1,5 @@
+module TestPrim
+import Prim
+open Prim
+
+let test = println (eq 1 1)

@@ -1,8 +1,18 @@
-from json.decoder import py_scanstring
-
-
+from io import StringIO
+from itertools import islice
 def parse_str(s):
-    return py_scanstring(s, 1)[0]
+    io = StringIO()
+    esc = False
+    for each in islice(s, 1, len(s)-1):
+        if esc:
+            io.write(each)
+            esc = False
+        elif each == '\\':
+            esc = True
+        else:
+            io.write(each)
+
+    return io.getvalue()
 
 
 def str_concat(a, b):
