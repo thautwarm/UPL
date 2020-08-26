@@ -53,6 +53,9 @@ let mk_post_infer (g: global_st) =
             failwith "compiler internal error: implicits not resolved"
         | ETypeVal t ->
             ETypeVal <| _check_prune pos t
+        | EFun(a, t, e) ->
+            let t = _check_prune pos t
+            EFun(a, t, expr_ self pos e)
         | a -> gen_trans_expr_impl self pos a
 
     let type_class_resolv
@@ -158,7 +161,7 @@ let load_module :
             let method_symgen = gensym g user_sym
             let _ = fields.[user_sym] <- ty
             let _ =
-                let gen_func = untyped_expr <| EFun("_", top_t, untyped_expr gen_exp)
+                let gen_func = untyped_expr <| EThunk(untyped_expr gen_exp)
                 DArray.push results
                 <| Assign(method_symgen, TArrow(top_t, ty), gen_func)
             mk_field user_sym (IR.EVar method_symgen) ty

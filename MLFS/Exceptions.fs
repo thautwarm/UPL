@@ -39,10 +39,12 @@ with
         sprintf "  Invalid namespace type:\n     %O" t
     | RecursiveDefinition s ->
         let i = s.LastIndexOf '.'
+        let i = if i < 0 then 0 else i
         let user_sym = s.[i..]
         sprintf "  Recursively define %s, check your definition again." user_sym
     | UndefinedSymbolInIR s ->
         let i = s.LastIndexOf '.'
+        let i = if i < 0 then 0 else i
         let user_sym = s.[i..]
         sprintf "  Undefined symbol %s in your ir files, did you provide all ir files required?" user_sym
     | ModuleNotProvided(thisModule, requiredModule) ->

@@ -46,6 +46,7 @@ and expr_impl =
 | ELet of decl list * expr
 | EITE of expr * expr * expr
 | EFun of symbol * HM.t * expr
+| EThunk of expr
 | EApp of expr * expr
 | ETup of expr list
 | EIm of HM.t * evidence_resolv_ctx
@@ -97,6 +98,7 @@ let gen_trans_expr_impl : 'ctx transformer -> 'ctx -> expr_impl  -> expr_impl
     | EITE(a1, a2, a3) ->
         EITE(!a1, !a2, !a3)
     | EFun(s, ann, e) -> EFun(s, ann, !e)
+    | EThunk(e) -> EThunk(!e)
     | EApp(f, a) -> EApp(!f, !a)
     | ETup xs -> ETup <| List.map (!) xs
     | EIm _ as e -> e
@@ -106,8 +108,16 @@ let gen_trans_expr : 'ctx transformer -> 'ctx -> expr  -> expr
     fun ({impl = impl} as expr) ->
     { expr with impl = expr_impl_ self ctx impl }
 
+[<GeneralizableValue>]
+let transformer =
+    { expr = gen_trans_expr
+    ; decl = gen_trans_decl
+    ; expr_impl = gen_trans_expr_impl
+    }
+
 let evidence t pos impl isPruned =
     {t = t; pos = pos; impl = impl; isPruned = isPruned}
+
 
 type library_signature =
     { module_names : (string, int) map

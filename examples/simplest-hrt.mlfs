@@ -34,7 +34,7 @@ let choose_id =
     // choose id
 
 val println : _ -> ()
-let println = extern ""
+let println = extern "println"
 
 val x : forall a. a
 let x = extern "Int"

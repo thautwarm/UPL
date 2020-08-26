@@ -439,4 +439,7 @@ and infer_expr : global_st -> local_st -> Surf.expr -> topdown_check =
         | None -> raise <| InferError(pos, UnboundVariable user_sym)
         | Some var_t ->
         let var_t = prune var_t
-        propagate_for_leaf var_t (IR.EVar user_sym)
+        match var_t, Map.tryFind user_sym st_local.symmap with
+        | T t, _ -> propagate_for_leaf var_t (IR.ETypeVal t)
+        | _, Some symgen -> propagate_for_leaf var_t (IR.EVar symgen)
+        | _ -> failwithf "no gensym for variable %s but not a type" user_sym
