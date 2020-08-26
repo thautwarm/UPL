@@ -33,7 +33,6 @@ and expr =
     ; typ : HM.t
     ; impl : expr_impl
     }
-    (* for F# overloading *)
 
 and decl =
 | Perform of expr
@@ -111,6 +110,6 @@ let evidence t pos impl isPruned =
     {t = t; pos = pos; impl = impl; isPruned = isPruned}
 
 type library_signature =
-    { module_names : symbol list
+    { module_names : (string, int) map
     ; implicits : (HM.t * evidence array) array
     }

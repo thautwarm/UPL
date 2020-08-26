@@ -51,6 +51,8 @@ module DArray =
         else this.GetRange(len-n, n)
 
 type ('k, 'v) dict = System.Collections.Generic.Dictionary<'k, 'v>
+type 't dset = System.Collections.Generic.HashSet<'t>
+
 
 let (|KV|) (x : System.Collections.Generic.KeyValuePair<'k, 'v>) =
     KV(x.Key, x.Value)
@@ -91,11 +93,25 @@ module Dict =
     let size : (_, _) dict -> int =
         fun this -> this.Count
 
+    let intersectKeys : (_, _) dict -> _ -> _ dset =
+        fun this other ->
+            let inter = dset()
+            for KV(k, _) in other do
+                if contains this k then
+                    ignore(inter.Add k)
+            done
+            inter
+
+    let merge : (_, _) dict -> _ -> unit =
+        fun this other ->
+        for KV(k, v) in other do
+            this.Add(k, v)
+        done
+
 
 module List =
     let foreach xs f = List.iter f xs
 
-type 't dset = System.Collections.Generic.HashSet<'t>
 
 module DSet =
     let clear (this: 't dset) =

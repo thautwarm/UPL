@@ -65,6 +65,12 @@ let perform_inline input =
             symbol, ex
     |]
 
+    let cnt = ref 0
+    let gensym s =
+         let i = !cnt
+         incr cnt;
+         sprintf "%s(%d)" s i
+
     let inline_calls ({expr=expr_} as self) ((recurs, scope) as ctx) =
           function
           | {expr.impl=EApp(f, arg)} as expr ->
@@ -75,11 +81,12 @@ let perform_inline input =
                 let recurs = Set.add sym recurs in
                 match Map.find sym defs with
                 | {impl=EFun(x, t, a)} as func ->
-                    let scope = Map.add x arg scope
+                    let x' = gensym x
+                    let scope = Map.add x {arg with impl = EVar x'} scope
                     { func with
                             impl =
                              ELet
-                              ( [Assign(x, t, arg)]
+                              ( [Assign(x', t, arg)]
                               , self.expr self (recurs, scope) a
                               )
                     }

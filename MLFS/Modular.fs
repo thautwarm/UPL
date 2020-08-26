@@ -92,17 +92,26 @@ type path = string
 
 
 let load_module :
-    symbol
+       _
+    -> symbol
     -> (symbol * symbol) list
     -> Surf.decl list
     -> path
     -> global_st
-    -> IR.decl list
-    = fun module_name imports decls path g ->
+    -> int * IR.decl list
+    = fun loaded_modules module_name imports decls path g ->
     let {prune = prune} = g.tcstate
     let g = {g with current_module_name = module_name}
     let mutable l = { empty_local_st with type_env = predef }
+    let pos = {line = 1; col = 1; filename = path} in
+    let mutable importOrder = 0
     for (import_module, alias) in imports do
+        match Dict.tryFind loaded_modules import_module with
+        | None ->
+            raise
+            <| InferError(pos, ModuleNotProvided(module_name, import_module))
+        | Some othersImportOrder ->
+        importOrder <- othersImportOrder
         let module_type = TApp(module_class, TNom import_module)
         l <-
           { l
@@ -116,7 +125,6 @@ let load_module :
     done;
     let results, local_tc = infer_decls g l decls true in
     let results = darray([|for i in results -> i.Force()|])
-    let pos = {line = 1; col = 1; filename = path} in
     let untyped_expr impl = {typ=top_t; pos=pos;impl=impl}
     let field_inst_cnt, field_instances =
             (Dict.getForce g.global_implicits_deltas field_class <| fun _ -> 0)
@@ -175,7 +183,8 @@ let load_module :
 
     g.global_implicits_deltas.[namespace_class] <- namespace_inst_cnt + 1
     let results = mk_post_infer g pos (List.ofSeq results)
-    Assign(module_gensym module_name, module_type, untyped_expr <| IR.EVal (I16 0s))::results
+    let results = Assign(module_gensym module_name, module_type, untyped_expr <| IR.EVal (I16 0s))::results
+    in importOrder + 1, results
 
 let raise_conflict_names : string seq -> 'a =
     fun reloadedModules ->
@@ -183,17 +192,17 @@ let raise_conflict_names : string seq -> 'a =
         "modile name conflicts: duplicate modules with the same names:\n %A"
         <| String.concat "\n" (Seq.map (fun a -> "- " ^ a) reloadedModules)
 
-let load_sigs : path list -> symbol dset -> global_st -> unit =
+let load_sigs : path list -> (symbol, int) dict  -> global_st -> unit =
     fun sig_files loaded_modules g ->
     for each in sig_files do
         let src_code = readFile each
         let { module_names = module_names
             ; implicits = implicits
             } = Json.deserialize<library_signature> src_code
-        let reloadedModules = DSet.intersect loaded_modules module_names
+        let reloadedModules = Dict.intersectKeys loaded_modules module_names
         if not <| DSet.isEmpty reloadedModules then
             raise_conflict_names reloadedModules
-        let _ = DSet.update loaded_modules module_names
+        let _ = Dict.merge loaded_modules module_names
         for (t_head, insts) in implicits do
             let global_implicits = Dict.getForce g.global_implicits t_head <| fun _ ->
                 darray()
@@ -203,14 +212,14 @@ let load_sigs : path list -> symbol dset -> global_st -> unit =
 
 let load_srcs :
     path list
-    -> symbol dset
+    -> (symbol, int) dict
     -> global_st
-    -> decl darray * library_signature
+    -> (int * decl array) * library_signature
     = fun src_files loaded_modules g ->
     let global_implicits = g.global_implicits
     let global_implicits_deltas = g.global_implicits_deltas
     let decls = darray()
-    let module_names = darray()
+    let module_names = dict()
     let {prune = prune} = g.tcstate
     for path in src_files do
         let { Surf.name = name
@@ -219,15 +228,14 @@ let load_srcs :
             } =
              Json.deserialize<Surf.module_record>
              <| readFile path
-        if DSet.contains loaded_modules name
+        if not <| Dict.contains loaded_modules name
         then
             raise_conflict_names [name]
         else
-
-        DSet.add loaded_modules name;
-        DArray.push module_names name;
-        DArray.extend decls
-        <| load_module name imports surf_decls path g
+        let importOrder, newDecls =
+             load_module loaded_modules name imports surf_decls path g
+        module_names.[name] <- importOrder;
+        DArray.extend decls newDecls
     done;
     let prune_evi : evidence -> evidence =
         fun evi ->
@@ -243,22 +251,51 @@ let load_srcs :
               |> Array.ofSeq
             )
         |]
-    decls,
-    { module_names = List.ofSeq module_names
+    let assemblyOrder = Seq.min module_names.Values
+    (assemblyOrder, Array.ofSeq decls),
+    { module_names = Map.ofSeq <| seq{ for KV(k, v) in module_names do yield k, v }
     ; implicits = implicits
     }
 
 let smlfs_compile : path list -> path list -> symbol -> string -> unit =
     fun src_fles sig_files out_library_name out_directory ->
-    let loadedModules = DSet.ofList []
+    let loadedModules: (symbol, int) dict = dict()
     let g = empty_global_st()
 
     load_sigs sig_files loadedModules g
-    let decls, signature = load_srcs src_fles loadedModules g
+    let object, signature = load_srcs src_fles loadedModules g
     show_hints g
 
-    let declJSON = Json.serialize <| Array.ofSeq decls
+    let declJSON = Json.serialize object
     writeFile (joinPath out_directory <| sprintf "%s.mlfso" out_library_name) declJSON
 
     let sigJSON = Json.serialize signature
     writeFile (joinPath out_directory <| sprintf "%s.mlfsa" out_library_name) sigJSON
+
+open Codegen.Julia
+open Inline
+
+let smlfs_assembly : path list -> path -> string -> unit =
+    fun object_files out_path backend ->
+    let decls = [|
+        for obj_file in object_files do
+        let obj = readFile obj_file
+        yield Json.deserialize<int * decl array> obj
+    |]
+    let decls = decls
+                |> Array.sortBy fst
+                |> Array.map snd
+                |> fun xs -> [for x in xs do yield! x]
+    let fake_pos = {line = 1; col = 1; filename = "<main>"}
+    let fake_expr = expr fake_pos top_t
+    let input = fake_expr <| ELet(decls, fake_expr <| EVal(I16 0s))
+    match perform_inline input with
+    | {impl = ELet(decls, _)} ->
+        match backend with
+        | "julia" ->
+            let isGlobal = true
+            let julia_code = pretty <| cg_decls isGlobal decls
+            writeFile out_path julia_code
+        | _ -> failwithf "unknown backend %s" backend
+    | _ -> failwith "impossible"
+

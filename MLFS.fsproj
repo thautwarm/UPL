@@ -18,12 +18,14 @@
     <Compile Include="MLFS/TypeClass.fs" />
     <Compile Include="MLFS/Infer.fs" />
     <Compile Include="MLFS/Inline.fs" />
+    <Compile Include="MLFS/Codegen/Julia.fs" />
     <Compile Include="MLFS/Modular.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FSharp.Json" Version="0.4.0" />
+    <PackageReference Include="FSharpx.Text.StructuredFormat" Version="2.3.2" />
   </ItemGroup>
 
 </Project>

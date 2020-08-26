@@ -13,6 +13,7 @@ type Signal =
 | InvalidNamespaceType of HM.t
 | RecursiveDefinition of symbol
 | UndefinedSymbolInIR of symbol
+| ModuleNotProvided of this:symbol * requiredModule:symbol
 
 with
   override this.ToString() =
@@ -44,4 +45,6 @@ with
         let i = s.LastIndexOf '.'
         let user_sym = s.[i..]
         sprintf "  Undefined symbol %s in your ir files, did you provide all ir files required?" user_sym
+    | ModuleNotProvided(thisModule, requiredModule) ->
+        sprintf "%s is not provided for compiling %s" requiredModule thisModule
 exception InferError of pos * Signal
