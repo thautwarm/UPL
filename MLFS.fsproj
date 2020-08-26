@@ -17,6 +17,7 @@
     <Compile Include="MLFS/Exceptions.fs" />
     <Compile Include="MLFS/TypeClass.fs" />
     <Compile Include="MLFS/Infer.fs" />
+    <Compile Include="MLFS/Inline.fs" />
     <Compile Include="MLFS/Modular.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

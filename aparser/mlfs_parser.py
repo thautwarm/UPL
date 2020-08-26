@@ -32,6 +32,19 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+def concat(xs):
+  if len(xs) == 1:
+    return xs[0]
+  res = []
+  for x in xs:
+    res.extend(x)
+  return res
+
+def importName(x):
+  return x.split('.')[-1]
+
+def inc(x):
+  return x + 1
 from json.decoder import py_scanstring
 def parse_str(s):
     return py_scanstring(s, 1)[0]
@@ -188,19 +201,6 @@ def mk_type_def(type_head, definition):
     ])
     return generated_ast
 
-def concat(xs):
-  if len(xs) == 1:
-    return xs[0]
-  res = []
-  for x in xs:
-    res.extend(x)
-  return res
-
-def importName(x):
-  return x.split('.')[-1]
-
-def inc(x):
-  return x + 1
 from typing import Generic, TypeVar
 T = TypeVar('T')
 
