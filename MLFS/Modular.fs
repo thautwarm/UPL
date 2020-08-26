@@ -228,7 +228,7 @@ let load_srcs :
             } =
              Json.deserialize<Surf.module_record>
              <| readFile path
-        if not <| Dict.contains loaded_modules name
+        if Dict.contains loaded_modules name
         then
             raise_conflict_names [name]
         else
@@ -298,4 +298,3 @@ let smlfs_assembly : path list -> path -> string -> unit =
             writeFile out_path julia_code
         | _ -> failwithf "unknown backend %s" backend
     | _ -> failwith "impossible"
-

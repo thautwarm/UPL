@@ -1,5 +1,6 @@
 cd examples
 mlfsc simplest-hrt.mlfs --name shrt --o ./out-simplest-hrt
+mlfsc --cg ./out-simplest-hrt/*.mlfso --o ./out-simplest-hrt/main.jl
 mlfsc prim.mlfs --name prim --o ./out-prim
 mlfsc record.mlfs --name record --o ./out-record
 mlfsc functor.mlfs --name functor --o ./out-functor

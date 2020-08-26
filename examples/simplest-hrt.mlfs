@@ -7,11 +7,7 @@ let x = fun f -> (f 1, f "")
 val z : { i64 -> i64 }
 let z = fun v -> v
 
-val k : (forall a. a -> a) -> (i32 -> i32)
-let k = extern "..."
 
-val g : (forall a. a) -> (i32 -> i32)
-let g = k
 
 val id : forall a. a -> a
 let id = fun x -> x
@@ -19,14 +15,27 @@ let id = fun x -> x
 val choose : forall a. a -> a -> a
 let choose = fun x -> fun y -> x
 
+val k : (forall a. a -> a) -> (i32 -> i32)
+let k = choose id
 
-val choose_id : (forall a. a) -> (i32 -> i32)
+val g : (forall a. a) -> (i32 -> i32)
+let g = k
+
+
+val choose_id : (forall a. a) -> (i64 -> i64)
 let choose_id =
     // without this intermediate instantiation(choose_id_),
     // MLFS rejects this program
-    val choose_id_ : (forall a. a -> a) -> (i32 -> i32)
+    val choose_id_ : (forall a. a -> a) -> (i64 -> i64)
     let choose_id_ = choose id
 
     in
     choose_id_
     // choose id
+
+val println : _ -> ()
+let println = extern ""
+
+val x : forall a. a
+let x = extern "Int"
+let _ = println (choose_id x 1)

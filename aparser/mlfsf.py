@@ -1,4 +1,5 @@
 import warnings
+
 warnings.filterwarnings("ignore", category=SyntaxWarning, message='"is" with a literal')
 
 from mlfs_lex import *
@@ -40,15 +41,15 @@ def parse(text: str, filename: str = "unknown"):
     e.text = text[: text.find("\n", off)]
     raise e
 
+
 def mlfsf(file, o):
     parser = mk_parser()
-
 
     with open(file) as f:
         src = f.read()
     res = parse(src, file)
 
-    with open(o, 'w') as f:
+    with open(o, "w") as f:
         f.write(json.dumps(res))
     return
 
