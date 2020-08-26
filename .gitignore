@@ -12,3 +12,6 @@ build/
 dist/
 examples/out-*/
 sphinx-docs/
+
+**.mlfso
+**.mlfsa

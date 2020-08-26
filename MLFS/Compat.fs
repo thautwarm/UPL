@@ -3,9 +3,15 @@ module CamlCompat
 
 let readFile = System.IO.File.ReadAllText
 let writeFile f contents =
-    ignore <| System.IO.Directory.CreateDirectory(
-                System.IO.Path.GetDirectoryName(f: string))
+    let dirname = System.IO.Path.GetDirectoryName(f: string)
+
+    if System.String.IsNullOrEmpty dirname
+       || System.String.IsNullOrWhiteSpace dirname
+    then ()
+    else ignore <| System.IO.Directory.CreateDirectory(dirname)
+
     System.IO.File.WriteAllText(f, contents)
+
 let joinPath a b = System.IO.Path.Join([|a; b|])
 
 let time_ns ()

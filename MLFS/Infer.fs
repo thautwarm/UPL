@@ -129,7 +129,7 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
                                 Map.add user_sym tvar local_st.type_env
                         }
                     symgen, tvar, [], local_st
-            let local_st =
+            let local_st' =
                 if List.isEmpty scoped_type_variables then
                     local_st
                 else
@@ -137,7 +137,7 @@ let rec infer_decls : global_st -> local_st -> Surf.decl list -> bool -> IR.decl
                     let new_bindings =
                         [|for un in scoped_type_variables -> un.name, TBound un|]
                     { local_st with type_env = Map.let_seq old_type_env new_bindings }
-            let topdown_check_expr = infer_expr global_st local_st expr
+            let topdown_check_expr = infer_expr global_st local_st' expr
             let local_implicits = local_st.local_implicits
             let lazy_decl =
                 lazy

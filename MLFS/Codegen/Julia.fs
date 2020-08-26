@@ -85,12 +85,17 @@ let (|MKId|) s =
 let rec cg_expr isGlobal =
     function
     | {expr.impl = NonLeaf impl; expr.typ=t} ->
-        let t = type_erasure t
-        leftL "(" +^  cg_expr_impl isGlobal impl +^ rightL ")" +^ wordL "::"
-        +?/> wordL t
+        let l = cg_expr_impl isGlobal impl
+        match type_erasure t with
+        | "Any" | "Function" -> l
+        | t ->
+        leftL "(" +^ l +^ rightL ")::" +?/> wordL t
     | {expr.impl = Leaf impl; expr.typ=t} ->
-        let t = type_erasure t
-        cg_expr_impl isGlobal impl +^ wordL "::"
+        let l = cg_expr_impl isGlobal impl
+        match type_erasure t with
+        | "Any" | "Function" -> l
+        | t ->
+        l +^ wordL "::"
         +?/> wordL t
     | {expr.impl = impl} ->
         cg_expr_impl isGlobal impl
@@ -135,7 +140,7 @@ and cg_expr_impl isGlobal =
         wordL "function" +^ head +>> body +/ wordL "end"
     | EApp(f, arg)->
         let f = leftL "(" +^ cg_expr isGlobal f +^ rightL ")"
-        f +^ sepL "(" +^ cg_expr isGlobal arg +^ rightL ")"
+        (f +^ sepL "(") +>> cg_expr isGlobal arg +^ rightL ")"
     | ETup [] -> wordL "nothing"
     | ETup xs -> tupleL <| List.map (cg_expr isGlobal) xs
     | EIm _ -> failwith "compiler internal error: implicits shall be solved"

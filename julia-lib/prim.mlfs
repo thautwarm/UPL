@@ -1,0 +1,21 @@
+module Prim
+
+val op_Element : u64 -> forall a b. a -> b
+let op_Element = extern "u -> x -> x[u]"
+val op_Make : forall sub maker. {Make (sub, maker)} -> Type sub -> maker
+let op_Make = fun f -> fun _ -> coerce f
+
+let make = op_Make
+
+type Eq a = (equal : a -> a -> bool)
+
+val eq : forall a.  {Eq a} -> a -> a -> bool
+let eq = fun eq -> fun lhs -> fun rhs -> eq.equal lhs rhs
+
+val eq_i64 : { Eq i64 }
+let eq_i64 = make Eq extern "let @inline eq(x::Int64) = (y::Int64) -> x === y"
+
+val eq_f64 : {Eq f64 }
+let eq_f64 = make Eq extern "let @inline eq(x::Float64) = (y::Float64) -> x === y"
+
+let test = eq 1 2
