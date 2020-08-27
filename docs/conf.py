@@ -43,7 +43,7 @@ html_theme_options = {
     # Navigation bar title. (Default: ``project`` value)
     "navbar_site_name": f"{project}",
     "navbar_title": f"{project}",
-    "navbar_links": [("GitHub", "https://github.com/thautwarm/U", True)],
+    "navbar_links": [("GitHub", "https://github.com/thautwarm/UPL", True)],
     # Render the next and previous page links in navbar. (Default: true)
     "navbar_sidebarrel": True,
     # Render the current pages TOC in the navbar. (Default: true)
@@ -112,7 +112,7 @@ html_sidebars = {"**": []}
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = "ulang_"
-html_baseurl = f"https://thautwarm.github.io/U/{version}/"
+html_baseurl = f"https://thautwarm.github.io/UPL/{version}/"
 
 # -- Options for LaTeX output ---------------------------------------------
 
