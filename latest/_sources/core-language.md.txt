@@ -66,9 +66,9 @@ The concept of tuple is similar to the anonymous structure type in C. You can cr
 
 
 - function types : `a -> a`
-- tuple type: `(), (a, b), (a, b, c)`
-- *named type*: `i32`, `i64`, `str`. Note that the types are not keywords, they're type bindings in current **scope**.
-- polymorphic type: `forall a. a -> a`, we read it as "for any type `a`, map `a` to `a`".
-- implicit type: `{ t }`. We don't talk about it at here.
+- tuple types: `()`, `(a, b)`, `(a, b, c)`, ...
+- *named types*(nominal types): `i32`, `i64`, `str`. Note that the types are not keywords, they're type bindings in current **scope**.
+- polymorphic types: `forall a. a -> a`, we read it as "for any type `a`, map `a` to `a`".
+- implicit types: `{ t }`. We don't talk about it at here.
 
 Under construction.
