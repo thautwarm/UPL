@@ -79,7 +79,7 @@ quite far from now. Alas, a big project but minimal human resources..)
 `{forall ...}`, in form of `{t}`, this is an implicit instance.
 `{{t1} -> t2}`, it means when building instance `t2`, the compiler is going to build `t1` first.
 
-You can also write `{{t1} -> {t2} -> t3}`, then implicitly building `t3` simultaneously requires implicitly building `t1` and `t2` .
+You can also write `{t1} -> {t2} -> t3}`, then implicitly building `t3` simultaneously requires implicitly building `t1` and `t2` .
 
 Implemented but need more documentations yet.
 
@@ -120,6 +120,7 @@ let y = quote { b + 1 }
 let f = fun x -> quote { fun a -> $x }
 
 runcode (f x) // okay
+
 runcode (f y) // error, instance symbol ("b",  i64) not found.
 ```
 
