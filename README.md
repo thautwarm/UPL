@@ -2,7 +2,7 @@
 
 Programming Abstractions are Unifiable.
 
-The website is https://thautwarm.github.io/U/latest, under construction.
+The website is https://thautwarm.github.io/UPL/latest, under construction.
 
 ## Try U
 
