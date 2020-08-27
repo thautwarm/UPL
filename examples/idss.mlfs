@@ -1,0 +1,19 @@
+module IDss
+import Prim2
+
+open Prim2
+
+val id : forall a. a -> a
+let id = fun x -> x
+
+val single : forall a. a -> Vec a
+let single = fun a ->
+    let v = ? (make Vec ()) as mk_vec_type
+    let _ = v.push a
+    in v
+
+val revapp : forall a b. a -> (a -> b) -> b
+let revapp = fun a -> fun f -> f a
+
+let u = single id
+check u as u_type

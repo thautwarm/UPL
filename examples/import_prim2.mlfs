@@ -1,6 +1,6 @@
 module main
-import Prim
-open Prim
+import Prim2
+open Prim2
 
 let _ = (? (println) as pr) 1
 let _ = println i64

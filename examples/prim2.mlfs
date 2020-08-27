@@ -1,4 +1,4 @@
-module Prim
+module Prim2
 
 val op_Element : u64 -> forall a b. a -> b
 let op_Element = extern "u -> x -> x[u]"

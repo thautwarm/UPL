@@ -15,4 +15,5 @@ timec "mlfsc record.mlfs --name record --o ./out-record"
 timec "mlfsc functor.mlfs --name functor --o ./out-functor"
 timec "mlfsc prim2.mlfs --name prim2 --o ./out-prim2"
 timec "mlfsc import_prim2.mlfs --sigs \"./out-prim2/prim2.mlfsa\" --name import_prim2 --o ./out-import_prim2"
+timec "mlfsc idss.mlfs --sigs \"./out-prim2/prim2.mlfsa\" --name idss --o ./out-idss"
 cd ..
