@@ -1,0 +1,46 @@
+module ICFP2020
+
+val List : Type @List
+let List = List
+
+val head : forall p. List p -> p
+let head = extern ""
+
+val tail : forall p. List p -> List p
+let tail = extern ""
+
+val emptyList : forall p. List p
+let emptyList = extern ""
+
+val cons : forall p. p -> List p -> List p
+let cons = extern ""
+
+val single : forall p. p -> List p
+let single = extern ""
+
+val concat : forall p. List p -> List p -> List p
+let concat = extern ""
+
+val id : forall a. a -> a
+let id = fun x -> x
+
+let ids = single id
+check ids as ids
+
+val revapp : forall a b. a -> (a -> b) -> b
+let revapp = fun x -> fun f -> f x
+
+val poly : (forall a. a -> a) -> (i64, bool)
+let poly = fun f -> (f 1, f true)
+
+let a1 = concat (? emptyList as em) ids
+check a1 as a1
+
+val foo : List (forall a. a -> a) -> i64
+let foo = extern ""
+
+let a2 = foo (? (single id) as single_id)
+check a2 as a2
+
+let a3 = cons id (cons id ids)
+check a3 as a3
