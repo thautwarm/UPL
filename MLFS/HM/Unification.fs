@@ -98,7 +98,7 @@ let mk_tcstate (tenv: t darray)
       in
 
     // check if any unsolved type variables
-    let prune_with_var_check : (int -> 'a) -> t -> t =
+    let rec prune_with_var_check : (int -> 'a) -> t -> t =
         fun f a ->
         match match a with
               | TVar i ->
@@ -107,7 +107,8 @@ let mk_tcstate (tenv: t darray)
                     | TVar i' when i' = i -> a
                     | t -> link i <| prune t
                 end
-              | _ -> generic_transform prune a
+              | _ ->
+                generic_trans_ctx prune_with_var_check f a
             with
         | TVar v as a -> ignore(f v); a
         | a -> a

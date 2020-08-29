@@ -44,3 +44,12 @@ check a2 as a2
 
 let a3 = cons id (cons id ids)
 check a3 as a3
+
+// does not check
+// val k : List (_ -> _)
+// let k = a3
+
+val k : List (i64 -> _)
+let k = a3
+
+check k as k
